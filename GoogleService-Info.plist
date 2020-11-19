@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>817745834533-mgdg6jaqrjr96peqmde6sn5i0126ldkv.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.817745834533-mgdg6jaqrjr96peqmde6sn5i0126ldkv</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDc_SepZqHhppGRVxLJfwddK1IWFPA3XBk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>817745834533</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.djtake.PracticeFireAuth</string>
+	<key>PROJECT_ID</key>
+	<string>practicefireauth</string>
+	<key>STORAGE_BUCKET</key>
+	<string>practicefireauth.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:817745834533:ios:2b2f8fde9b18789dcbc5cc</string>
+	<key>DATABASE_URL</key>
+	<string>https://practicefireauth.firebaseio.com</string>
+</dict>
+</plist>
