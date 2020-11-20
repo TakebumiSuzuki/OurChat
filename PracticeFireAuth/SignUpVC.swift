@@ -7,8 +7,7 @@
 //
 
 import UIKit
-import FirebaseAuth
-
+import Firebase
 
 class SignUpVC: UIViewController {
     
@@ -90,7 +89,16 @@ class SignUpVC: UIViewController {
         return field
     }()
     
-    
+    lazy var registerButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Register", for: .normal)
+        button.backgroundColor = .link
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 8
+        button.addTarget(self, action: #selector(registerUserToFirebase), for: .touchUpInside)
+        return button
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,7 +106,7 @@ class SignUpVC: UIViewController {
         title = "sign up"
         view.backgroundColor = .white
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .done, target: self, action: #selector(registerFirebase))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .done, target: self, action: #selector(registerUserToFirebase))
         
         firstNameField.delegate = self
         lastNameField.delegate = self
@@ -107,14 +115,20 @@ class SignUpVC: UIViewController {
         setUpViews()
         layoutViews()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(willShowKeyboard), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(willHideKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
+        
     }
+    
     
     private func setUpViews(){
         view.addSubview(profileImageView)
         view.addSubview(firstNameField)
         view.addSubview(lastNameField)
         view.addSubview(emailTextField)
+        view.addSubview(registerButton)
         view.addSubview(passwordTextField)
+        
     }
     
     private func layoutViews(){
@@ -144,6 +158,11 @@ class SignUpVC: UIViewController {
         passwordTextField.heightAnchor.constraint(equalToConstant: 40).isActive = true
         passwordTextField.leadingAnchor.constraint(equalTo: firstNameField.leadingAnchor).isActive = true
         passwordTextField.trailingAnchor.constraint(equalTo: firstNameField.trailingAnchor).isActive = true
+        
+        registerButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 30).isActive = true
+        registerButton.centerXAnchor.constraint(equalTo: margins.centerXAnchor).isActive = true
+        registerButton.widthAnchor.constraint(equalTo: firstNameField.widthAnchor, multiplier: 0.6).isActive = true
+        registerButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
     }
     
     
@@ -158,7 +177,33 @@ class SignUpVC: UIViewController {
     }
     
     
-    @objc private func registerFirebase(){
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        view.endEditing(true)
+    }
+    
+    @objc private func willShowKeyboard(notification: Notification){
+        
+        let keyboardFrame = (notification.userInfo![UIResponder.keyboardFrameEndUserInfoKey] as AnyObject).cgRectValue
+        guard let keyboardMinY = keyboardFrame?.minY else {return}
+        let registerButtonMaxY = registerButton.frame.maxY
+        if registerButtonMaxY > keyboardMinY{
+            let distance = registerButtonMaxY - keyboardMinY + 20
+            let transform = CGAffineTransform(translationX: 0, y: -distance)
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: [], animations: {
+                self.view.transform = transform
+            })
+        }
+    }
+    
+    @objc private func willHideKeyboard(){
+        
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: [], animations: {
+            self.view.transform = .identity
+        })
+    }
+    
+    @objc private func registerUserToFirebase(){
         
         guard let firstName = firstNameField.text,
             let lastName = lastNameField.text,
@@ -177,18 +222,54 @@ class SignUpVC: UIViewController {
                 ServiceAlert.showSimpleAlert(vc: self, title: "Failed to register", message: error.localizedDescription)
                 return
             }
-            
-            guard let result = result else {return}
-            print("Successfully signed up to Firebase Auth")
-            
+            guard let result = result else {return} ; print("Successfully registered to Firebase Auth")
             let userID = result.user.uid
-            print(userID)
-            //databaseにfirstName,lastName,EmailをUser UIDと共に保存。また写真も保存
+            self.saveUserToFireStore(firstName: firstName, lastName: lastName, email: email, userID: userID)
+        }
+    }
+    
+    
+    private func saveUserToFireStore(firstName: String, lastName: String, email: String, userID: String){
+        
+        let docData = ["email": email, "firstName": firstName, "lastName": lastName, "createdAt": Timestamp()] as [String: Any]
+        
+        Firestore.firestore().collection("users").document(userID).setData(docData){ [weak self] (error) in
+            
+            guard let self = self else {return}
+            if let error = error{
+                print("Failed to save user info Firestore. \(error.localizedDescription)" ) ; return
+            }
+            //databaseに写真も保存
+            print("successfully saved in Firestore")
+            self.createUserObject(userID: userID, pictureURL: "testURL")
+            
+        }
+    }
+    
+    
+    private func createUserObject(userID: String, pictureURL: String){
+        
+        Firestore.firestore().collection("users").document(userID).getDocument { [weak self] (snapshot, error) in
+            
+            guard let self = self else {return}
+            
+            if let error = error{
+                print("Failed to fetch user info from Firestore. \(error.localizedDescription)" ) ; return
+            }
+            
+            guard let data = snapshot?.data() else {return}
+            print(data)
+            let user = User.init(dic: data, userID: userID, pictureURL: pictureURL)
             
             self.navigationController?.dismiss(animated: true, completion: nil)
         }
+        
     }
+    
+    
 }
+
+
 
 
 
@@ -209,7 +290,7 @@ extension SignUpVC: UITextFieldDelegate{
         case emailTextField:
             passwordTextField.becomeFirstResponder()
         case passwordTextField:
-            registerFirebase()
+            registerUserToFirebase()
         default:
             break
         }
@@ -232,9 +313,11 @@ extension SignUpVC: UIImagePickerControllerDelegate, UINavigationControllerDeleg
         let action2 = UIAlertAction(title: "Chose Photo", style: .default) {[weak self] (action) in
             guard let self = self else {return}
             self.presentPhotoPicker()
-            
         }
-        let action3 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        let action3 = UIAlertAction(title: "Delete Photo", style: .cancel) {[weak self] (action) in
+            guard let self = self else {return}
+            self.profileImageView.image = UIImage(systemName: "person")
+        }
         
         let actions = [action1, action2, action3]
         ServiceAlert.showMultipleSelectionAlert(vc: self, title: "Profile Picture", message: "How would you like to select a picture?", actions: actions)
@@ -264,11 +347,11 @@ extension SignUpVC: UIImagePickerControllerDelegate, UINavigationControllerDeleg
         self.profileImageView.image = selectedImage
     }
     
-//    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {  // dismissの必要はないみたい
-//        picker.dismiss(animated: true, completion: nil)
-//    }
+    //    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {  // dismissの必要はないみたい
+    //        picker.dismiss(animated: true, completion: nil)
+    //    }
     
     
 }
-    
+
 

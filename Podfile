@@ -8,5 +8,9 @@ target 'PracticeFireAuth' do
   # Pods for PracticeFireAuth
 
 pod 'Firebase/Auth'
+pod 'Firebase/Firestore'
+
+
+pod 'FBSDKLoginKit'
 
 end

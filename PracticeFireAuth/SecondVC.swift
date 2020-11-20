@@ -27,8 +27,23 @@ class SecondVC: UIViewController {
     
     @objc private func logOutButtonPressed(){
         
-        try! Auth.auth().signOut()
+        let action1 = UIAlertAction(title: "OK", style: .default) { (action) in
+            do{
+                try Auth.auth().signOut()
+            }catch{
+                print("failed to log out from Firebase Auth sign in")
+            }
+        }
+        let action2 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         
-        
+        ServiceAlert.showMultipleSelectionAlert(vc: self, title: "Logging out", message: "Would you really like to log out?", actions: [action1, action2])
+    }
+    
+    @objc private func logOutFromFirebaseAuth(){
+        do{
+            try Auth.auth().signOut()
+        }catch{
+            print("failed to log out from Firebase Auth sign in")
+        }
     }
 }

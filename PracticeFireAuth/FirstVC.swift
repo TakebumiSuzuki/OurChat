@@ -15,7 +15,9 @@ class FirstVC: UIViewController {
         super.viewDidLoad()
         
         Auth.auth().addStateDidChangeListener { (auth, user) in
+            print("addStateDidChangeListener got triggered")
             if user == nil{
+                print("user has just logged out")
                 self.presentLoginVC()
             }
         }
@@ -38,7 +40,7 @@ class FirstVC: UIViewController {
         let loginVC = LoginVC()
         let nav = UINavigationController(rootViewController: loginVC)
         nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: false, completion: nil)
+        present(nav, animated: true, completion: nil)
         
         
         
