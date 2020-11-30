@@ -1,5 +1,5 @@
 //
-//  FriendListCell.swift
+//  SearchFriendCell.swift
 //  PracticeFireAuth
 //
 //  Created by TAKEBUMI SUZUKI on 11/30/20.
@@ -8,14 +8,15 @@
 
 import UIKit
 import SDWebImage
+import Firebase
 
-protocol FriendListCellDelegate{
-    func cellLongPressedGesture(friendUID: String)
+protocol SearchFriendCellDelegate{
+    func showAddingFriendAlert(friendUID: String, friendName: String)
 }
 
-class FriendListCell: UITableViewCell {
+class SearchFriendCell: UITableViewCell {
     
-    var delegate: FriendListCellDelegate?
+    var delegate: SearchFriendCellDelegate?
     
     var user: User?{
         didSet{
@@ -26,7 +27,7 @@ class FriendListCell: UITableViewCell {
         }
     }
     
-    lazy var imagePicture: UIImageView = {
+    private var imagePicture: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.backgroundColor = .white
@@ -39,20 +40,22 @@ class FriendListCell: UITableViewCell {
     }()
     
     
-    lazy var nameLabel: UILabel = {
+    private var nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 30, weight: .regular)
         return label
     }()
     
-    lazy var startChatButton: UIButton = {
+    lazy var addFriendButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(systemName: "text.bubble"), for: .normal)
-        button.tintColor = .link
+        button.setTitle("Add", for: .normal)
+        button.tintColor = .white
+        button.backgroundColor = .link
         button.layer.cornerRadius = 7
         button.clipsToBounds = true
+        button.addTarget(self, action: #selector(addFriendButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -60,27 +63,18 @@ class FriendListCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         setupViews()
-        
-        self.isUserInteractionEnabled = true
-        let longPressedGesture = UILongPressGestureRecognizer(target: self, action: #selector(showDeleteAlert))
-        longPressedGesture.minimumPressDuration = 1.0
-        self.addGestureRecognizer(longPressedGesture)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc private func showDeleteAlert(){
-        guard let friendUID = user?.authUID else{print("FriendのauthUID取得に失敗しました"); return}
-        delegate?.cellLongPressedGesture(friendUID: friendUID)
-    }
     
     private func setupViews(){
         
         contentView.addSubview(imagePicture)
         contentView.addSubview(nameLabel)
-        contentView.addSubview(startChatButton)
+        contentView.addSubview(addFriendButton)
         
         contentView.frame = self.bounds
         
@@ -92,12 +86,22 @@ class FriendListCell: UITableViewCell {
         nameLabel.leadingAnchor.constraint(equalTo: imagePicture.trailingAnchor, constant: 25).isActive = true
         nameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         
-        startChatButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -35).isActive = true
-        startChatButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
-        startChatButton.heightAnchor.constraint(equalTo: startChatButton.widthAnchor).isActive = true
-        startChatButton.heightAnchor.constraint(equalToConstant: 70).isActive = true
+        addFriendButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -35).isActive = true
+        addFriendButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
+        addFriendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        addFriendButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
     }
+    
+    @objc private func addFriendButtonTapped(){
+        
+        if let friendUID = user?.authUID, let friendName = user?.displayName{
+            delegate?.showAddingFriendAlert(friendUID: friendUID, friendName: friendName)
+            
+        }
+        
+    }
+    
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -106,3 +110,4 @@ class FriendListCell: UITableViewCell {
     }
 
 }
+

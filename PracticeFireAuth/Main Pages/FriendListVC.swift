@@ -41,9 +41,14 @@ class FriendListVC: UIViewController {
         
         view.addSubview(table)
         table.frame = view.bounds
-        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus.bubble"), style: .done, target: self, action: #selector(searchFriendButtonPressed))
     }
     
+    @objc private func searchFriendButtonPressed(){
+        let vc = SearchFriendVC()
+        let nav = UINavigationController(rootViewController: vc)
+        present(nav, animated: true, completion: nil)
+    }
     
     private func fetchFriends(){
         
@@ -51,10 +56,11 @@ class FriendListVC: UIViewController {
         
         let ref = Firestore.firestore().collection("friendLists").document(authUID)
         ref.addSnapshotListener {[weak self] (snapshot, error) in
-            
+            print("スナップショットリスナー作動")
             guard let self = self else{return}
             if error != nil{print("ユーザーの情報documentの取得に失敗しました"); return}
             
+            self.friends.removeAll()
             let dispatchgroup = DispatchGroup()
             if let documentDic = snapshot!.data(){
                 documentDic.forEach { (eachFriendRequest) in
@@ -82,6 +88,7 @@ class FriendListVC: UIViewController {
                     self.friends.sort(by: {(first: User, second: User) -> Bool in
                         first.displayName > second.displayName
                     })
+                    print("テーブルビューリロード。friends, \(self.friends)")
                     
                     self.table.reloadData()
                 }
@@ -102,19 +109,26 @@ class FriendListVC: UIViewController {
     }
 }
 
-extension FriendListVC: UITableViewDelegate, UITableViewDataSource, DeleteFriendAlertDelegate{
+extension FriendListVC: UITableViewDelegate, UITableViewDataSource, FriendListCellDelegate{
     
-    func cellLongPressedGesture(userUID: String) {
+    func cellLongPressedGesture(friendUID: String) {
         
-        guard let authUID = authUID else{print("UIDの取得に失敗しました"); return}
+        guard let myUID = authUID else{print("UIDの取得に失敗しました"); return}
         let action1 = UIAlertAction(title: "Delete", style: .default) { (action) in
-            Firestore.firestore().collection("friendLists").document(authUID).updateData([userUID : FieldValue.delete()]) { (error) in
-                if error != nil{print("FireStore内のFirendのUID消去に失敗しました。"); return}
+            Firestore.firestore().collection("friendLists").document(myUID).updateData([friendUID : FieldValue.delete()]) { (error) in
+                if error != nil{print("FireStore内の自分のドキュメント内の、FirendUIDフィールドの消去に失敗しました。"); return}
+            }
+            Firestore.firestore().collection("friendLists").document(friendUID).updateData([myUID : FieldValue.delete()]) { (error) in
+                if error != nil{print("FireStore内の友達のドキュメント内の、自分UIDフィールドの消去に失敗しました。"); return}
             }
         }
         let action2 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         
         ServiceAlert.showMultipleSelectionAlert(vc: self, title: "calncel friendship", message: "Would you like to delete your friend?", actions: [action1,action2])
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -128,7 +142,7 @@ extension FriendListVC: UITableViewDelegate, UITableViewDataSource, DeleteFriend
         let cell = table.dequeueReusableCell(withIdentifier: "FriendListCell", for: indexPath) as! FriendListCell
         cell.user = friends[indexPath.row]
         cell.delegate = self
-        print(friends[indexPath.row])
+    
         return cell
     }
     

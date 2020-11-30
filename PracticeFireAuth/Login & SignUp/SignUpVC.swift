@@ -292,7 +292,7 @@ extension SignUpVC: UIImagePickerControllerDelegate, UINavigationControllerDeleg
             guard let self = self else {return}
             self.presentCamera()
         }
-        let action2 = UIAlertAction(title: "Chose Photo", style: .default) {[weak self] (action) in
+        let action2 = UIAlertAction(title: "Choose Photo", style: .default) {[weak self] (action) in
             guard let self = self else {return}
             self.presentPhotoPicker()
         }

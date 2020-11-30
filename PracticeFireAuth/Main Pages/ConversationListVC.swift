@@ -70,15 +70,11 @@ class ConversationListVC: UIViewController {
         view.addSubview(table)
         table.frame = view.bounds
         table.backgroundColor = .lightGray
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus.bubble"), style: .done, target: self, action: #selector(addFriendButtonPressed))
+        
         
     }
 
-    @objc private func addFriendButtonPressed(){
-        let vc = AddFriendVC()
-        let nav = UINavigationController(rootViewController: vc)
-        present(nav, animated: true, completion: nil)
-    }
+    
     
     func presentLoginVC(){
         
