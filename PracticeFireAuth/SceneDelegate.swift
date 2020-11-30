@@ -22,15 +22,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window?.windowScene = windowScene
         
+        //reveloper.comでは、UITabBarControllerを継承したMainTabBarControllerを作り、そのViewDidLoadの中にnavControllerやBarItemなどを書いている。
+        //また、FirebaseAuthをインポートしif Auth.auth().currentUser == nil{}などのコードもそのviewDidLoadの中に書いている。
         let tab = UITabBarController()
-        let firstVC = FirstVC()
-        let secondVC = SecondVC()
-        let nav1 = UINavigationController(rootViewController: firstVC)
-        let nav2 = UINavigationController(rootViewController: secondVC)
-        nav1.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "house"), selectedImage: UIImage(systemName: "house.fill"))
-        nav2.tabBarItem = UITabBarItem(title: "Info", image: UIImage(systemName: "person.circle"), selectedImage: UIImage(systemName: "person.circle.fill"))
+        let conversationListVC = ConversationListVC()
+        let friendListVC = FriendListVC()
+        let settingVC = SettingVC()
+        let nav1 = UINavigationController(rootViewController: conversationListVC)
+        let nav2 = UINavigationController(rootViewController: friendListVC)
+        let nav3 = UINavigationController(rootViewController: settingVC)
+        nav1.tabBarItem = UITabBarItem(title: "Chat", image: UIImage(systemName: "text.bubble"), selectedImage: UIImage(systemName: "text.bubble.fill"))
+        nav2.tabBarItem = UITabBarItem(title: "Friends", image: UIImage(systemName: "person"), selectedImage: UIImage(systemName: "person.fill"))
+        nav3.tabBarItem = UITabBarItem(title: "Account", image: UIImage(systemName: "doc.plaintext"), selectedImage: UIImage(systemName: "doc.plaintext.fill"))
         
-        tab.viewControllers = [nav1, nav2]
+        tab.viewControllers = [nav1,nav2,nav3]
         window?.rootViewController = tab
         
         window?.makeKeyAndVisible()

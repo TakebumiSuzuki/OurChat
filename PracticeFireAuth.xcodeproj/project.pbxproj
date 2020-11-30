@@ -7,15 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0C0F0FB0257182570051D7CB /* ChatRoomVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C0F0FAF257182570051D7CB /* ChatRoomVC.swift */; };
+		0C0F0FB32571B7D00051D7CB /* ConversationListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C0F0FB22571B7D00051D7CB /* ConversationListCell.swift */; };
 		0C1E383125667420005CA891 /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1E383025667420005CA891 /* String+Extension.swift */; };
 		0C202289256876630039E76D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C202288256876630039E76D /* User.swift */; };
+		0C3228EA2572C79B00C7CBEF /* FriendListVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3228E92572C79B00C7CBEF /* FriendListVC.swift */; };
+		0C7D727B25744CE20072D866 /* FriendListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7D727A25744CE20072D866 /* FriendListCell.swift */; };
+		0C7D727D2574CDCB0072D866 /* AddFriendVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7D727C2574CDCB0072D866 /* AddFriendVC.swift */; };
+		0C90FC99256984A100A8BBD5 /* FireStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C90FC98256984A100A8BBD5 /* FireStorageManager.swift */; };
 		0CDABCE22567050A00DDD5DA /* ServiceAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CDABCE12567050A00DDD5DA /* ServiceAlert.swift */; };
 		0CE1329D25655A8700B666A7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE1329C25655A8700B666A7 /* AppDelegate.swift */; };
 		0CE1329F25655A8700B666A7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE1329E25655A8700B666A7 /* SceneDelegate.swift */; };
 		0CE132A625655A8900B666A7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0CE132A525655A8900B666A7 /* Assets.xcassets */; };
 		0CE132A925655A8900B666A7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0CE132A725655A8900B666A7 /* LaunchScreen.storyboard */; };
-		0CE132B125655BDD00B666A7 /* FirstVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE132B025655BDD00B666A7 /* FirstVC.swift */; };
-		0CE132B325655BED00B666A7 /* SecondVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE132B225655BED00B666A7 /* SecondVC.swift */; };
+		0CE132B125655BDD00B666A7 /* ConversationListVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE132B025655BDD00B666A7 /* ConversationListVC.swift */; };
+		0CE132B325655BED00B666A7 /* SettingVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE132B225655BED00B666A7 /* SettingVC.swift */; };
 		0CE132B5256563ED00B666A7 /* LoginVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE132B4256563ED00B666A7 /* LoginVC.swift */; };
 		0CE132B7256563FC00B666A7 /* SignUpVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE132B6256563FC00B666A7 /* SignUpVC.swift */; };
 		0CE132B92565665D00B666A7 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0CE132B82565665D00B666A7 /* GoogleService-Info.plist */; };
@@ -23,8 +29,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0C0F0FAF257182570051D7CB /* ChatRoomVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRoomVC.swift; sourceTree = "<group>"; };
+		0C0F0FB22571B7D00051D7CB /* ConversationListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationListCell.swift; sourceTree = "<group>"; };
 		0C1E383025667420005CA891 /* String+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		0C202288256876630039E76D /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		0C3228E92572C79B00C7CBEF /* FriendListVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendListVC.swift; sourceTree = "<group>"; };
+		0C7D727A25744CE20072D866 /* FriendListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendListCell.swift; sourceTree = "<group>"; };
+		0C7D727C2574CDCB0072D866 /* AddFriendVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriendVC.swift; sourceTree = "<group>"; };
+		0C90FC98256984A100A8BBD5 /* FireStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FireStorageManager.swift; sourceTree = "<group>"; };
 		0CDABCE12567050A00DDD5DA /* ServiceAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceAlert.swift; sourceTree = "<group>"; };
 		0CE1329925655A8700B666A7 /* PracticeFireAuth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PracticeFireAuth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0CE1329C25655A8700B666A7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -32,8 +44,8 @@
 		0CE132A525655A8900B666A7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0CE132A825655A8900B666A7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0CE132AA25655A8900B666A7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0CE132B025655BDD00B666A7 /* FirstVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstVC.swift; sourceTree = "<group>"; };
-		0CE132B225655BED00B666A7 /* SecondVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondVC.swift; sourceTree = "<group>"; };
+		0CE132B025655BDD00B666A7 /* ConversationListVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationListVC.swift; sourceTree = "<group>"; };
+		0CE132B225655BED00B666A7 /* SettingVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingVC.swift; sourceTree = "<group>"; };
 		0CE132B4256563ED00B666A7 /* LoginVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginVC.swift; sourceTree = "<group>"; };
 		0CE132B6256563FC00B666A7 /* SignUpVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpVC.swift; sourceTree = "<group>"; };
 		0CE132B82565665D00B666A7 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
@@ -54,6 +66,37 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0C0F0FAD257181EA0051D7CB /* Login & SignUp */ = {
+			isa = PBXGroup;
+			children = (
+				0CE132B4256563ED00B666A7 /* LoginVC.swift */,
+				0CE132B6256563FC00B666A7 /* SignUpVC.swift */,
+			);
+			path = "Login & SignUp";
+			sourceTree = "<group>";
+		};
+		0C0F0FAE257182100051D7CB /* Main Pages */ = {
+			isa = PBXGroup;
+			children = (
+				0CE132B025655BDD00B666A7 /* ConversationListVC.swift */,
+				0C0F0FB22571B7D00051D7CB /* ConversationListCell.swift */,
+				0C3228E92572C79B00C7CBEF /* FriendListVC.swift */,
+				0C7D727A25744CE20072D866 /* FriendListCell.swift */,
+				0C7D727C2574CDCB0072D866 /* AddFriendVC.swift */,
+				0C0F0FAF257182570051D7CB /* ChatRoomVC.swift */,
+				0CE132B225655BED00B666A7 /* SettingVC.swift */,
+			);
+			path = "Main Pages";
+			sourceTree = "<group>";
+		};
+		0C0F0FB12571B6A90051D7CB /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0C202288256876630039E76D /* User.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		0CE1329025655A8700B666A7 = {
 			isa = PBXGroup;
 			children = (
@@ -78,16 +121,15 @@
 				0CE132B82565665D00B666A7 /* GoogleService-Info.plist */,
 				0CE1329C25655A8700B666A7 /* AppDelegate.swift */,
 				0CE1329E25655A8700B666A7 /* SceneDelegate.swift */,
-				0CE132B025655BDD00B666A7 /* FirstVC.swift */,
-				0CE132B225655BED00B666A7 /* SecondVC.swift */,
-				0CE132B4256563ED00B666A7 /* LoginVC.swift */,
-				0CE132B6256563FC00B666A7 /* SignUpVC.swift */,
+				0C0F0FB12571B6A90051D7CB /* Models */,
+				0C0F0FAE257182100051D7CB /* Main Pages */,
+				0C0F0FAD257181EA0051D7CB /* Login & SignUp */,
 				0CE132A525655A8900B666A7 /* Assets.xcassets */,
 				0CE132A725655A8900B666A7 /* LaunchScreen.storyboard */,
 				0CE132AA25655A8900B666A7 /* Info.plist */,
 				0C1E383025667420005CA891 /* String+Extension.swift */,
 				0CDABCE12567050A00DDD5DA /* ServiceAlert.swift */,
-				0C202288256876630039E76D /* User.swift */,
+				0C90FC98256984A100A8BBD5 /* FireStorageManager.swift */,
 			);
 			path = PracticeFireAuth;
 			sourceTree = "<group>";
@@ -225,13 +267,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C1E383125667420005CA891 /* String+Extension.swift in Sources */,
-				0CE132B325655BED00B666A7 /* SecondVC.swift in Sources */,
-				0CE132B125655BDD00B666A7 /* FirstVC.swift in Sources */,
+				0CE132B325655BED00B666A7 /* SettingVC.swift in Sources */,
+				0CE132B125655BDD00B666A7 /* ConversationListVC.swift in Sources */,
 				0CE1329D25655A8700B666A7 /* AppDelegate.swift in Sources */,
 				0CE1329F25655A8700B666A7 /* SceneDelegate.swift in Sources */,
+				0C7D727B25744CE20072D866 /* FriendListCell.swift in Sources */,
+				0C7D727D2574CDCB0072D866 /* AddFriendVC.swift in Sources */,
+				0C3228EA2572C79B00C7CBEF /* FriendListVC.swift in Sources */,
 				0C202289256876630039E76D /* User.swift in Sources */,
 				0CE132B7256563FC00B666A7 /* SignUpVC.swift in Sources */,
+				0C90FC99256984A100A8BBD5 /* FireStorageManager.swift in Sources */,
+				0C0F0FB32571B7D00051D7CB /* ConversationListCell.swift in Sources */,
 				0CDABCE22567050A00DDD5DA /* ServiceAlert.swift in Sources */,
+				0C0F0FB0257182570051D7CB /* ChatRoomVC.swift in Sources */,
 				0CE132B5256563ED00B666A7 /* LoginVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
