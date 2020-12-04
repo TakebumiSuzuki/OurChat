@@ -26,14 +26,31 @@ class FireStorageManager{
                 }
                 guard let url = url else{return}
                 let downloadURL = url.absoluteString
-                print("successfully gotten download URL: \(downloadURL)")
+                print("FireStorageへのpictureダウンロードURLを取得できました")
                 
                 completion(.success(downloadURL))
             }
         }
     }
     
-    
+    static func uploadMediaData(data: Data, chatRoomID: String, uid: String, completion: @escaping (Result<String, Error>) -> Void){
+        
+        let fileName = UUID().uuidString + ".jpg"
+        let storageRef = Storage.storage().reference().child(chatRoomID).child(uid).child(fileName)
+        
+        storageRef.putData(data, metadata: nil) { (metadata, error) in
+            
+            if let error = error{completion(.failure(error)); return}
+            
+            storageRef.downloadURL { (url, error) in
+                
+                if let error = error {completion(.failure(error)); return}
+                guard let url = url else{return}
+                let downloadURL = url.absoluteString
+                completion(.success(downloadURL))
+            }
+        }
+    }
     
     
 }

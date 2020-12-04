@@ -33,20 +33,13 @@ class SettingVC: UIViewController {
             }catch{
                 print("failed to log out from Firebase Auth sign in")
             }
+            
+            FBSDKLoginKit.LoginManager().logOut()
         }
+        
         let action2 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         
         ServiceAlert.showMultipleSelectionAlert(vc: self, title: "Logging out", message: "Would you really like to log out?", actions: [action1, action2])
     }
     
-    @objc private func logOutFromFirebaseAuth(){
-        
-        FBSDKLoginKit.LoginManager().logOut()
-        
-        do{
-            try Auth.auth().signOut()
-        }catch{
-            print("failed to log out from Firebase Auth sign in")
-        }
-    }
 }

@@ -7,26 +7,28 @@
 //
 
 import UIKit
+import Firebase
 import SDWebImage
 
 protocol FriendListCellDelegate{
-    func cellLongPressedGesture(friendUID: String)
+    func cellLongPressedGesture(friendUID: String, friendName: String)
+    func PushChatRoom(friendUserObject: User)
 }
 
 class FriendListCell: UITableViewCell {
     
     var delegate: FriendListCellDelegate?
     
-    var user: User?{
+    var friendUserObject: User?{     //このオブジェクトはTableViewのdequereusableCellからパスされる
         didSet{
-            if let url = user?.pictureURL{
-                imagePicture.sd_setImage(with: URL(string: url), placeholderImage: UIImage(systemName: "cloud"))
+            if let url = friendUserObject?.pictureURL{
+                imagePicture.sd_setImage(with: URL(string: url), placeholderImage: nil)
             }
-            nameLabel.text = user?.displayName
+            nameLabel.text = friendUserObject?.displayName
         }
     }
     
-    lazy var imagePicture: UIImageView = {
+    private var imagePicture: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.backgroundColor = .white
@@ -38,15 +40,14 @@ class FriendListCell: UITableViewCell {
         return imageView
     }()
     
-    
-    lazy var nameLabel: UILabel = {
+    private var nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 30, weight: .regular)
         return label
     }()
     
-    lazy var startChatButton: UIButton = {
+    private var startChatButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(UIImage(systemName: "text.bubble"), for: .normal)
@@ -61,19 +62,26 @@ class FriendListCell: UITableViewCell {
         
         setupViews()
         
+        startChatButton.addTarget(self, action: #selector(startChatButtonPressed), for: .touchUpInside)
+        
         self.isUserInteractionEnabled = true
-        let longPressedGesture = UILongPressGestureRecognizer(target: self, action: #selector(showDeleteAlert))
+        let longPressedGesture = UILongPressGestureRecognizer(target: self, action: #selector(showUnfriendAlert))
         longPressedGesture.minimumPressDuration = 1.0
         self.addGestureRecognizer(longPressedGesture)
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    
+    @objc private func showUnfriendAlert(){
+        
+        guard let friendName = friendUserObject?.displayName else{print("Friendの名前の取得に失敗しました"); return}
+        guard let friendUID = friendUserObject?.authUID else{print("FriendのauthUID取得に失敗しました"); return}
+        delegate?.cellLongPressedGesture(friendUID: friendUID, friendName: friendName)
     }
     
-    @objc private func showDeleteAlert(){
-        guard let friendUID = user?.authUID else{print("FriendのauthUID取得に失敗しました"); return}
-        delegate?.cellLongPressedGesture(friendUID: friendUID)
+    @objc private func startChatButtonPressed(){
+        if let friendUserObject = friendUserObject{
+            delegate?.PushChatRoom(friendUserObject: friendUserObject)
+        }
     }
     
     private func setupViews(){
@@ -96,13 +104,14 @@ class FriendListCell: UITableViewCell {
         startChatButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         startChatButton.heightAnchor.constraint(equalTo: startChatButton.widthAnchor).isActive = true
         startChatButton.heightAnchor.constraint(equalToConstant: 70).isActive = true
-        
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-
         // Configure the view for the selected state
     }
-
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
 }

@@ -78,10 +78,10 @@ class LoginVC: UIViewController {
         setupViews()
         layoutViews()
         
-        if let token = AccessToken.current,
-            !token.isExpired {
-            // User is logged in, do work such as go to next view controller.
-        }
+//        if let token = AccessToken.current,
+//            !token.isExpired {
+//            // User is logged in, do work such as go to next view controller.
+//        }
     }
     
 
@@ -120,6 +120,9 @@ class LoginVC: UIViewController {
         loginButton.centerXAnchor.constraint(equalTo: margins.centerXAnchor).isActive = true
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        view.endEditing(true)
+    }
     
     @objc private func signUpButtonTapped(){
         
@@ -130,8 +133,7 @@ class LoginVC: UIViewController {
     
     @objc private func loginButtonPressed(){
         
-        guard let email = emailTextField.text else {return}
-        guard let password = passwordTextField.text else {return}
+        guard let email = emailTextField.text, let password = passwordTextField.text else {return}
         
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] (result, error) in
             
@@ -172,7 +174,7 @@ extension LoginVC: LoginButtonDelegate{
             
             
             guard let result = result else {return}
-            print("FBからのtokenを使いFirebaseAuthへのログインが成功しました")
+            print("FBからのtokenを使いFirebaseAuthへのログインに成功しました")
             
             let userID = result.user.uid
             
@@ -192,16 +194,26 @@ extension LoginVC: LoginButtonDelegate{
                 return
             }
             
-            //emailはnilにできないのでguard let。
+            //emailはnilにできないようにするのでguard let。
             guard let email = result["email"] as? String else{print("fbGraphRequestからのemail取得に失敗しました"); return}
-            let firstName = result["first_name"] as? String
+            let firstName = result["first_name"] as? String ?? "New User" //登録時はFBのfirstNameをdisplayNameとして使う。
             let lastName = result["last_name"] as? String
             
             //取り敢えずemail,firstName,lastNameのみでまずは保存またはupdateする。
-            User.saveUserToFireStore(authUID: authUID, email: email, displayName: "", pictureURL: nil, firstName: firstName, lastName: lastName, createdAt: Timestamp(), completion: { [weak self] error in
+            User.saveUserToFireStore(authUID: authUID, email: email, displayName: firstName, pictureURL: nil, firstName: firstName, lastName: lastName, createdAt: Timestamp(), completion: { [weak self] error in
                 
                 guard let self = self else{return}
-                if error != nil{print("ユーザー情報のFireStoreへの保存が失敗しました。ログイン作業は中断します"); return}
+                if error != nil{print("ユーザー情報のFireStoreへの保存が失敗しました。ログイン作業は中断します\(error!)"); return}
+                
+                if Auth.auth().currentUser?.displayName == nil{
+                    //ここでもしAuthの方にこのAuthUIDと紐づくdisplayNameがすでに登録されていなかったら、つまり新規登録者の場合。
+                    let changeRequest = Auth.auth().currentUser?.createProfileChangeRequest()
+                    changeRequest?.displayName = firstName
+                    changeRequest?.commitChanges(completion: { (error) in
+                        if error != nil{print("displayNameのFirebaseAuthへの登録に失敗しました\(error!)"); return}
+                    })
+                }
+                
                 
                 //基本情報をFirestoreに保存またはupdateできたので、次にfbGraphからの写真が存在する場合のみ、FireStorageに保存する。
                 if let pictureKey = result["picture"] as? [String: Any],
@@ -211,6 +223,7 @@ extension LoginVC: LoginButtonDelegate{
                     self.uploadFBPictureToFireStorage(url: fbPictureDLURL, authUID: authUID)
                     
                 }else{
+                    print("Facebookのprofile写真へのリンクは取得できませんでしたが、このまま登録作業を完了します。")
                     self.dismiss(animated: true, completion: nil)
                 }
             })
@@ -225,10 +238,10 @@ extension LoginVC: LoginButtonDelegate{
         URLSession.shared.dataTask(with: url, completionHandler: { [weak self] data, response, error in
             
             guard let self = self else{return}
-            if let error = error{print(error.localizedDescription); return}
+            if error != nil{print("Facebook profile pictureのダウンロード中にエラーです\(error!)"); return}
             
             guard let safeData = data, let profileImage = UIImage(data: safeData) else{
-                print("failed to get profile image data")
+                print("ダウンロードしたFacebook写真データにエラーがあります。")
                 return
             }
             
@@ -239,7 +252,9 @@ extension LoginVC: LoginButtonDelegate{
                 switch result{
                 case .success(let downloadURL):
                     print("FBPictureのFireStorageへのセーブが完了しました。")
-                    Firestore.firestore().collection("users").document(authUID).updateData(["pictureURL": downloadURL])
+                    Firestore.firestore().collection("users").document(authUID).setData(["pictureURL": downloadURL], merge: true) { (error) in
+                        if error != nil{print("FireStorageにアップロードされた写真urlのセーブに失敗しました\(error!)"); return}
+                    }
                     self.dismiss(animated: true, completion: nil)
                 case .failure(_):
                     print("FBPictureのFireStorageへのセーブに失敗しましたがこのまま写真抜きでログインを完了させます")

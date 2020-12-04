@@ -46,7 +46,7 @@ struct User{
             if error != nil{
                 print("Failed to save user info Firestore." ); completion(error) ; return
             }
-            print("successfully saved in Firestore")
+            print("ユーザーのemailやdisplayName,pictureURL(optional)など各情報をFireStoreに保存できました")
             completion(nil) //エラーがないのでnilを送る
         }
     }

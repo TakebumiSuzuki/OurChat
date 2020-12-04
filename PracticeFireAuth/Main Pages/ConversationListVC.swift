@@ -8,83 +8,99 @@
 
 import UIKit
 import Firebase
+import SDWebImage
 
-struct ChatRoom{
-    let members: [String]
-    let chatRoomID: String
-    let createdAt: Timestamp
-    let latestMessage: Message
-}
 
 class ConversationListVC: UIViewController {
     
-    var chatRooms: [ChatRoom] = []
-    var myUID: String = ""
+    private var chatRooms: [ChatRoom] = []
+    private var myUID: String = ""{
+        didSet{
+            guard let myDisplayName = Auth.auth().currentUser?.displayName else{print("Authから自分のdisplayNameを取得するのに失敗しました"); return}
+            DispatchQueue.main.async {
+                print("displayNameを取得したのでtitleに表示します")
+                self.navigationItem.title = myDisplayName
+            }
+        }
+    }
     
-    let table: UITableView = {
+    private let tableView: UITableView = {
         let table = UITableView()
-        
         return table
     }()
     
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         print("view1 did load")
+        checkLoginStatus()
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(ConversationListCell.self, forCellReuseIdentifier: "myCell")
+        view.backgroundColor = .white
+        setupViews()
+        
+    }
+    
+    
+    private func checkLoginStatus(){
+        
         Auth.auth().addStateDidChangeListener { [weak self] (auth, user) in
-            print("addStateDidChangeListener got triggered")
             guard let self = self else{return}
+            
             if let user = user{
+                print("StateDidChangeListenerが発動し自分のUIDのログイン状態が確認されました")
                 self.myUID = user.uid
-                self.navigationItem.title = user.displayName
+                print("myUIDの方からもどりfetchChatRoom()実行に入ります。")
+                self.fetchChatRooms()
             }else{
-                print("user has just logged out")
+                print("StateDidChangeListenerが発動しログアウトが確認されました")
                 self.tabBarController?.selectedIndex = 0
                 self.presentLoginVC()
                 return
             }
         }
-        
-        table.delegate = self
-        table.dataSource = self
-        table.register(ConversationListCell.self, forCellReuseIdentifier: "myCell")
-        
-        view.backgroundColor = .blue
-        
-        setViews()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        print("view1 will Appear")
-    }
-    override func viewWillDisappear(_ animated: Bool) {
-        print("view1 will Disappear")
-    }
-    override func viewDidDisappear(_ animated: Bool) {
-        print("view1 did Disappear")
-    }
-    
-    private func setViews(){
-        
-        view.addSubview(table)
-        table.frame = view.bounds
-        table.backgroundColor = .lightGray
-        
-        
-    }
-
-    
-    
-    func presentLoginVC(){
+    private func presentLoginVC(){
         
         let loginVC = LoginVC()
         let nav = UINavigationController(rootViewController: loginVC)
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true, completion: nil)
-        
     }
     
+    private func setupViews(){
+        print("setupViews発動")
+        view.addSubview(tableView)
+        tableView.frame = view.bounds
+        tableView.backgroundColor = .lightGray
+    }
+
+    private func fetchChatRooms(){
+        print("myUIDは\(myUID)")
+        Firestore.firestore().collection("chatRooms").whereField("members", arrayContains: myUID)
+            .addSnapshotListener { [weak self] (snapshot, error) in
+                print("fetchChatRoomsのlistner受信")
+                guard let self = self else{return}
+                if error != nil{print("chatRoom情報のダウンロードに失敗しました。\(error!)"); return}
+                guard let snapshot = snapshot else{return}
+                self.chatRooms.removeAll()
+                
+                print("ConversationListVCより。自分が関係するchatroomの数\(snapshot.count)")
+                snapshot.documents.forEach { (eachDocument) in
+                    let dictionary = eachDocument.data()
+                    
+                    var chatRoom = ChatRoom(dic: dictionary)
+                    chatRoom.myUID = self.myUID
+                    self.chatRooms.append(chatRoom)
+                }
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+                
+        }
+    }
 }
 
 
@@ -95,24 +111,42 @@ extension ConversationListVC: UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
-//        return chatRooms.count
+        return chatRooms.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "myCell", for: indexPath) as! ConversationListCell
-//        let chatRoom = chatRooms[indexPath.row]
-//        cell.setContents(chatRoom: chatRoom)
+        let chatRoom = chatRooms[indexPath.row]
+        cell.chatRoomObject = chatRoom
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        table.deselectRow(at: indexPath, animated: true)
+        
+        
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let chatRoom = chatRooms[indexPath.row]
+        
+        var friendUID = ""
+        chatRoom.members.forEach { (memberUID) in
+            if memberUID != myUID{
+                friendUID = memberUID
+            }
+        }
+        
+        var chatRoomID = ""
+        if myUID > friendUID{
+            chatRoomID  = myUID + "_" + friendUID
+        }else{
+            chatRoomID = friendUID + "_" + myUID
+        }
+        
         let chatRoomVC = ChatRoomVC()
-        self.navigationController?.pushViewController(chatRoomVC, animated: true)
+        chatRoomVC.chatRoomID = chatRoomID
+        chatRoomVC.friendUID = friendUID
+        navigationController?.pushViewController(chatRoomVC, animated: true)
     }
-    
-    
     
 }
 

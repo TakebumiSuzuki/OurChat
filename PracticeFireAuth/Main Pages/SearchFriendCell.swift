@@ -7,8 +7,8 @@
 //
 
 import UIKit
-import SDWebImage
 import Firebase
+import SDWebImage
 
 protocol SearchFriendCellDelegate{
     func showAddingFriendAlert(friendUID: String, friendName: String)
@@ -18,12 +18,12 @@ class SearchFriendCell: UITableViewCell {
     
     var delegate: SearchFriendCellDelegate?
     
-    var user: User?{
+    var friendUserObject: User?{
         didSet{
-            if let url = user?.pictureURL{
-                imagePicture.sd_setImage(with: URL(string: url), placeholderImage: UIImage(systemName: "cloud"))
+            if let url = friendUserObject?.pictureURL{
+                imagePicture.sd_setImage(with: URL(string: url), placeholderImage: nil)
             }
-            nameLabel.text = user?.displayName
+            nameLabel.text = friendUserObject?.displayName
         }
     }
     
@@ -65,11 +65,6 @@ class SearchFriendCell: UITableViewCell {
         setupViews()
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    
     private func setupViews(){
         
         contentView.addSubview(imagePicture)
@@ -90,24 +85,25 @@ class SearchFriendCell: UITableViewCell {
         addFriendButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         addFriendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
         addFriendButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        
     }
     
     @objc private func addFriendButtonTapped(){
         
-        if let friendUID = user?.authUID, let friendName = user?.displayName{
-            delegate?.showAddingFriendAlert(friendUID: friendUID, friendName: friendName)
-            
+        guard let friendUID = friendUserObject?.authUID, let friendName = friendUserObject?.displayName else{
+            print("friendUIDオブジェクトからUIDとfriendNameを取得することに失敗しました。")
+            return
         }
-        
+        delegate?.showAddingFriendAlert(friendUID: friendUID, friendName: friendName)
     }
-    
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
     }
-
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
 }
 

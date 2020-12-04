@@ -155,7 +155,6 @@ class SignUpVC: UIViewController {
     
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
         view.endEditing(true)
     }
     
@@ -192,7 +191,6 @@ class SignUpVC: UIViewController {
                 ServiceAlert.showSimpleAlert(vc: self, title: "woops..", message: "Please enter all information to register")
                 return
         }
-        
         registerUserToFirebaseAuth(email: email, password: password)
     }
     
@@ -214,7 +212,6 @@ class SignUpVC: UIViewController {
             let authUID = result.user.uid
             
             guard let profileImage = self.profileImageView.image else{return}
-            
             
             if profileImage == UIImage(systemName: "person"){ //ユーザーが写真を選んでいない時はそのままFireStoreへgo!
                 self.saveUserInfoToFireStore(authUID: authUID, email: email, pictureURL: nil)
@@ -244,11 +241,17 @@ class SignUpVC: UIViewController {
         }
     }
     
-    //FireStoreにユーザー情報を保存してdismiss
+    //FireAuthに名前の登録、そしてFireStoreにユーザー情報を保存してdismiss
     func saveUserInfoToFireStore(authUID: String, email: String, pictureURL: String?){
         
         let displayName = displayNameField.text!
         
+        let changeRequest = Auth.auth().currentUser?.createProfileChangeRequest()
+        changeRequest?.displayName = displayName
+        changeRequest?.commitChanges(completion: { (error) in
+            if error != nil{print("displayNameのFirebaseAuthへの登録に失敗しました\(error!)"); return}
+        })
+            
         User.saveUserToFireStore(authUID: authUID, email: email, displayName: displayName, pictureURL: pictureURL, firstName: nil, lastName: nil, createdAt: Timestamp()) { (error) in
             
             if error != nil {print("FireStoreへのユーザー情報セーブが失敗しました。"); return}

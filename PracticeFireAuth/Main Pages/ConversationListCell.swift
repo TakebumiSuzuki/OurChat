@@ -7,18 +7,33 @@
 //
 
 import UIKit
+import Firebase
+import SDWebImage
 
 class ConversationListCell: UITableViewCell {
     
+    private let dateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.timeStyle = .medium
+        df.dateStyle = .medium
+        return df
+    }()
     
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-        
-        // Configure the view for the selected state
+    
+    var chatRoomObject: ChatRoom?{
+        didSet{
+            setFriendPicture()
+            if let chatRoomObject = chatRoomObject{
+                messageTextLabel.text = chatRoomObject.latestMessageText
+                let dateInfo = chatRoomObject.latestMessageTime.dateValue()
+                timeLabel.text = dateFormatter.string(from: dateInfo)
+                newMessageNumberLabel.text = String(chatRoomObject.numberOfNewMessages)
+            }
+        }
     }
     
     
-    let imagePicture: UIImageView = {
+    private let imagePicture: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.backgroundColor = .white
@@ -27,11 +42,10 @@ class ConversationListCell: UITableViewCell {
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 25
         imageView.clipsToBounds = true
-        
         return imageView
     }()
     
-    let nameLabel: UILabel = {
+    private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .white
@@ -40,7 +54,7 @@ class ConversationListCell: UITableViewCell {
         return label
     }()
     
-    let messageTextLabel: UILabel = {
+    private let messageTextLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 2
@@ -50,9 +64,8 @@ class ConversationListCell: UITableViewCell {
         return label
     }()
     
-    let timeLabel: UILabel = {
+    private let timeLabel: UILabel = {
         let label = UILabel()
-        
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .white
         label.font = .systemFont(ofSize: 12, weight: .thin)
@@ -60,26 +73,58 @@ class ConversationListCell: UITableViewCell {
         return label
     }()
     
+    private let newMessageNumberLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = .red
+        label.font = .systemFont(ofSize: 12, weight: .thin)
+        label.text = "0"
+        return label
+    }()
+    
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        
         self.backgroundColor = .clear
         self.contentView.backgroundColor = .clear
         setupViews()
+    }
+    
+    private func setFriendPicture(){
         
+        if let chatRoomObject = chatRoomObject {
+            chatRoomObject.members.forEach { (memberUID) in
+                if memberUID != chatRoomObject.myUID{
+                    
+                    let friendUID = memberUID
+                    Firestore.firestore().collection("users").document(friendUID).getDocument { [weak self](snapshot, error) in
+                        
+                        guard let self = self else{return}
+                        if error != nil{print("Firestoreから友達データを取得するのに失敗しました"); return}
+                        guard let snapshot = snapshot else{return}
+                        guard let dictionary = snapshot.data() else{return}
+                        guard let url = dictionary["pictureURL"] as? String else{return}
+                        guard let friendName = dictionary["displayName"] as? String else{return}
+                        DispatchQueue.main.async {
+                            self.imagePicture.sd_setImage(with: URL(string: url), placeholderImage: nil)
+                            self.nameLabel.text = friendName
+                        }
+                    }
+                }
+            }
+        }
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
     
-    func setupViews(){
+    private func setupViews(){
         
         self.contentView.frame = self.bounds
         self.contentView.addSubview(imagePicture)
         self.contentView.addSubview(nameLabel)
         self.contentView.addSubview(messageTextLabel)
         self.contentView.addSubview(timeLabel)
+        self.contentView.addSubview(newMessageNumberLabel)
         
         imagePicture.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 10).isActive = true
         imagePicture.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor).isActive = true
@@ -99,12 +144,17 @@ class ConversationListCell: UITableViewCell {
         timeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -25).isActive = true
         timeLabel.bottomAnchor.constraint(equalTo: messageTextLabel.bottomAnchor).isActive = true
         
+        newMessageNumberLabel.leadingAnchor.constraint(equalTo: timeLabel.leadingAnchor).isActive = true
+        newMessageNumberLabel.bottomAnchor.constraint(equalTo: timeLabel.topAnchor, constant: 10).isActive = true
     }
     
     
-    func setContents(chatRoom: ChatRoom){
-        
+    
+    
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
     }
-    
-    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
