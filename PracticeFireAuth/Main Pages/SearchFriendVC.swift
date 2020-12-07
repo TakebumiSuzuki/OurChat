@@ -16,6 +16,8 @@ class SearchFriendVC: UIViewController{
     private var foundUsers: [User] = []
     //private var requestingUsers: [User] = []
     
+    private var myFriendListDic = ["" : ""]
+    
     private let searchBar: UISearchBar = {
        let bar = UISearchBar()
         bar.placeholder = "search with email or name"
@@ -44,11 +46,26 @@ class SearchFriendVC: UIViewController{
         view.backgroundColor = .white
         
         setupViews()
+        fetchMyFriendListDic()
     }
     
     private func setupViews(){
         view.addSubview(tableView)
         tableView.frame = view.bounds
+    }
+    
+    private func fetchMyFriendListDic(){
+        
+        let uid = Auth.auth().currentUser?.uid
+        guard let myUID = uid else{return}
+        Firestore.firestore().collection("friendLists").document(myUID).getDocument { [weak self] (snapshot, error) in
+            
+            guard let self = self else{return}
+            if error != nil{print("自分のfriend listドキュメント取得に失敗しました"); return}
+            guard let snapshot = snapshot else{return}
+            guard let dictionary = snapshot.data() as? [String : String] else{return}
+            self.myFriendListDic = dictionary
+        }
     }
     
     private func searchBegin(query: String){  //emailまたはdisplayNameで全Userを検索して、createdAtの新しい順に並べる。
@@ -58,18 +75,24 @@ class SearchFriendVC: UIViewController{
         Firestore.firestore().collection("users")
             .whereField(emailOrDisplayName, isEqualTo: query)
             .order(by: "createdAt", descending: true)
-            .getDocuments { (snapshot, error) in
+            .getDocuments { [weak self](snapshot, error) in
                 
+                guard let self = self else{return}
                 if error != nil{print("Friend検索中にエラーです。\(error!)"); return}
                 
                 let dispatchGroup = DispatchGroup()
-                let resultDocs = snapshot!.documents
+                guard let snapshot = snapshot else{return}
+                let resultDocs = snapshot.documents
+                self.foundUsers.removeAll()
                 for singleDocument in resultDocs{
                     dispatchGroup.enter()
-                    let friendUID = singleDocument.documentID
-                    User.createUserObjectFromUID(authUID: friendUID) { [weak self] (result) in
-                        
-                        guard let self = self else{return}
+                    let friendUID = singleDocument.documentID //data()とやる代わりにこうするとパス名を取得できる
+                    if friendUID == Auth.auth().currentUser?.uid{  //自分自身を除外する
+                        dispatchGroup.leave()
+                        continue   //これがないと、このまま下に処理が続いていってdispatchGroup.leave()が重複されてエラーになってしまうよう。
+                    }
+                    
+                    User.createUserObjectFromUID(authUID: friendUID) { (result) in
                         switch result{
                         case .success(let userObject):
                             self.foundUsers.append(userObject)
@@ -81,6 +104,7 @@ class SearchFriendVC: UIViewController{
                     }
                 }
                 dispatchGroup.notify(queue: .main) {
+                    
                     self.tableView.reloadData()
                     if self.foundUsers.isEmpty{
                         ServiceAlert.showSimpleAlert(vc: self, title: "There is no result.", message: "Check out spell once again")
@@ -92,22 +116,26 @@ class SearchFriendVC: UIViewController{
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) { //全く抗力を発揮していない。なぜ？
         searchBar.endEditing(true)
     }
-
 }
 
+
+//MARK: - SearchBar Delegate Methods サーチバーの各種設定
 extension SearchFriendVC: UISearchBarDelegate{
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         
         dismiss(animated: true, completion: nil)
     }
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         
         guard let text = searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty else {return}
         searchBar.resignFirstResponder()
         searchBegin(query: text)
     }
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange: String){
+        
         if searchBar.text?.count ?? 0 >= 1{
             foundUsers = []
             tableView.reloadData()
@@ -116,6 +144,7 @@ extension SearchFriendVC: UISearchBarDelegate{
 }
 
 
+//MARK: - TableView Delegate Methods
 extension SearchFriendVC: UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -128,50 +157,42 @@ extension SearchFriendVC: UITableViewDelegate, UITableViewDataSource{
         return 80
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        2
-    }
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if section == 0{
-            return "Search Result"
+        if self.foundUsers.count == 0{
+            return nil
         }else{
-            return "Friend requests"
+            return "Search Result"
         }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0{
-            return foundUsers.count
-        }else{
-            return 0
-        }
+        return foundUsers.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "SearchFriendCell", for: indexPath) as! SearchFriendCell
         cell.friendUserObject = foundUsers[indexPath.row]
+        cell.myFriendListDic = myFriendListDic
         cell.delegate = self
         return cell
     }
 }
 
 
+//MARK: - Cell Delegate 友達追加ボタンを押されたき
 extension SearchFriendVC: SearchFriendCellDelegate{  //友達を追加する
     
-    func showAddingFriendAlert(friendUID: String, friendName: String) {
+    func showAddingFriendAlert(friendUID: String, friendName: String, completion: @escaping() -> Void) {
         
         let alert1 = UIAlertAction(title: "Ok", style: .default) { [weak self](alert) in
             
             guard let self = self else {return}
             guard let myUID = Auth.auth().currentUser?.uid else{print("自分のUIDの取得に失敗しました");return}
             
-            if friendUID == myUID{
-                ServiceAlert.showSimpleAlert(vc: self, title: "You can't friend with your self!!", message: "")
-                return
+            self.saveFriendInfoToFireStore(friendUID: friendUID, friendName: friendName, myUID: myUID) {
+                completion()
             }
-            self.saveFriendInfoToFireStore(friendUID: friendUID, friendName: friendName, myUID: myUID)
-            
         }
         
         let alert2 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
@@ -179,8 +200,31 @@ extension SearchFriendVC: SearchFriendCellDelegate{  //友達を追加する
         ServiceAlert.showMultipleSelectionAlert(vc: self, title: "Adding \(friendName) to your friend.", message: "ok?", actions: [alert1, alert2])
     }
     
+    func showUnfriendAlert(friendUID: String, friendName: String, completion: @escaping() -> Void){
+        
+        let alert1 = UIAlertAction(title: "Ok", style: .default) { [weak self](alert) in
+            
+            guard let self = self else {return}
+            guard let myUID = Auth.auth().currentUser?.uid else{print("自分のUIDの取得に失敗しました");return}
+            
+            self.deleteFriendInfofromFireStore(friendUID: friendUID, friendName: friendName, myUID: myUID) {
+                completion()
+            }
+        }
+        
+        let alert2 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        ServiceAlert.showMultipleSelectionAlert(vc: self, title: "You are unfriending with \(friendName).", message: "Are you sure?", actions: [alert1, alert2])
+    }
+        
+        
+        
+        
     
-    func saveFriendInfoToFireStore(friendUID: String, friendName: String, myUID: String) {
+    
+    
+    
+    private func saveFriendInfoToFireStore(friendUID: String, friendName: String, myUID: String, completion: @escaping() -> Void) {
         
         let dispatchGroup = DispatchGroup()
         dispatchGroup.enter()
@@ -190,11 +234,32 @@ extension SearchFriendVC: SearchFriendCellDelegate{  //友達を追加する
         dispatchGroup.leave()
         
         dispatchGroup.notify(queue: .main) {
-            self.dismiss(animated: true, completion: nil)
+            //self.dismiss(animated: true, completion: nil)
             ServiceAlert.showSimpleAlert(vc: self.presentingViewController!, title: "\(friendName) is your friend now!" , message: "Successfully added to your Friend List.")
+            completion()
         }
     }
     
+    private func deleteFriendInfofromFireStore(friendUID: String, friendName: String, myUID: String, completion: @escaping() -> Void){
+        
+        let dispatchGroup = DispatchGroup()
+        dispatchGroup.enter()
+        
+        Firestore.firestore().collection("friendLists").document(friendUID).updateData([myUID : FieldValue.delete()]) { (error) in
+            if error != nil{print("FireStore内の友達のドキュメント内の、自分UIDフィールドの消去に失敗しました。"); return}
+        }
+        Firestore.firestore().collection("friendLists").document(myUID).updateData([friendUID : FieldValue.delete()]) { (error) in
+            if error != nil{print("FireStore内の自分のフレンドドキュメント内の、FirendUIDフィールド消去に失敗しました。"); return}
+        }
+        dispatchGroup.leave()
+        
+        dispatchGroup.notify(queue: .main) {
+            //self.dismiss(animated: true, completion: nil)
+            ServiceAlert.showSimpleAlert(vc: self.presentingViewController!, title: "Unfriended with \(friendName)" , message: "Not friend anymore")
+            completion()
+        }
+        
+    }
     
 }
 

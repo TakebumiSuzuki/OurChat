@@ -24,7 +24,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         //reveloper.comでは、UITabBarControllerを継承したMainTabBarControllerを作り、そのViewDidLoadの中にnavControllerやBarItemなどを書いている。
         //また、FirebaseAuthをインポートしif Auth.auth().currentUser == nil{}などのコードもそのviewDidLoadの中に書いている。
-        let tab = UITabBarController()
+        let tab = MySubclassedTabBarController()
         let conversationListVC = ConversationListVC()
         let friendListVC = FriendListVC()
         let settingVC = SettingVC()
@@ -36,8 +36,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         nav3.tabBarItem = UITabBarItem(title: "Account", image: UIImage(systemName: "doc.plaintext"), selectedImage: UIImage(systemName: "doc.plaintext.fill"))
         
         tab.viewControllers = [nav1,nav2,nav3]
-        window?.rootViewController = tab
+        UITabBar.appearance().tintColor = .gray
+        UINavigationBar.appearance().tintColor = .gray
+        let attributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 36, weight: .light)]
+        UINavigationBar.appearance().largeTitleTextAttributes = attributes
         
+        
+        window?.rootViewController = tab
         window?.makeKeyAndVisible()
     
     }

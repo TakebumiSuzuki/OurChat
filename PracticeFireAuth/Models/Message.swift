@@ -18,23 +18,23 @@ struct Message: MessageType{
     var kind: MessageKind
     
     
-    static func saveNewMessageToFireStore(newMessage: Message, myUID: String, friendUID: String, chatRoomID: String, completion: @escaping () -> Void){
+    static func saveNewMessageToFireStore(newMessage: Message, myUID: String, friendUID: String, friendName: String, chatRoomID: String, completion: @escaping () -> Void){
         //まずは深い階層のmessageよりも、chatの階層に情報を入れる。
-        print("---[MessageModel]chat階層へ保存する準備(dic作り)を始めます。----")
-        let members: [String] = [myUID, friendUID]
         
+        let members: [String] = [myUID, friendUID]
         let latestMessageTime = newMessage.sentDate
+        let latestMessageSenderUID = myUID
         
         var latestMessageText = ""
         switch newMessage.kind {
-        case .text(let messageText):
-            latestMessageText = messageText
-        case .attributedText(_):
+        case .text(_):
             break
+        case .attributedText(let attributedString):  //せっかくattributedでオブジェクトを作ったが、FireStoreに保存するので普通のStringに直す。
+            latestMessageText = attributedString.string
         case .photo(_):
-            latestMessageText = "Your friend sent you a photo."
+            latestMessageText = "a photo sent"
         case .video(_):
-            latestMessageText = "Your friend sent you a video."
+            latestMessageText = "a video sent"
         case .location(_):
             break
         case .emoji(_):
@@ -49,34 +49,34 @@ struct Message: MessageType{
             break
         }
         
-        let latestMessageSenderUID = myUID
-        let numberOfNewMessages = 0 //テストで
-        
         let dictionaryForChatRoomInfo = [
             "members": members,
             "latestMessageTime": latestMessageTime,
             "latestMessageText": latestMessageText,
             "latestMessageSenderUID": latestMessageSenderUID,
-            "numberOfNewMessages": numberOfNewMessages
-            ] as [String : Any]
-        print("---[MessageModel]chat階層へ保存するdic作りが終わり、これからこれをFirestoreに保存し始めます。")
+            "chatRoomID": chatRoomID] as [String : Any]
+        
         Firestore.firestore().collection("chatRooms").document(chatRoomID).setData(dictionaryForChatRoomInfo, merge: true) { (error) in
             if error != nil{print("FirestoreへのchatRoom情報記入に失敗しました。\(error!)"); return}
-            print("---[MessageModel]chatRoom階層へのセーブが終了し、message階層へ保存するdic作りを始めます////----")
-            //message階層に情報を入れる
+            
+            
+            //次にmessage階層に情報を入れる
             let messageId = newMessage.messageId
             
             var contentString = ""
+            var thumbnailURL = ""
             switch newMessage.kind {
-            case .text(let messageText):
-                contentString = messageText
-            case .attributedText(_):
+            case .text(_):
                 break
+            case .attributedText(let attributedString): //上のchatRoomの時と同様、FireStoreに保存するためにStringに直す。
+                contentString = attributedString.string
             case .photo(let photoMedia):
                 guard let url = photoMedia.url else{return}
                 contentString = url.absoluteString
-            case .video(_):
-                latestMessageText = "Your friend sent you a video."
+            case .video(let videoMedia):
+                guard let DownloadURL = videoMedia.url, let media = videoMedia as? Media else{return}
+                contentString = DownloadURL.absoluteString
+                thumbnailURL = media.thumbnailURL
             case .location(_):
                 break
             case .emoji(_):
@@ -95,14 +95,14 @@ struct Message: MessageType{
                 "Sender": ["senderID": newMessage.sender.senderId , "displayName": newMessage.sender.displayName],
                 "messageId": newMessage.messageId,
                 "sentDate": newMessage.sentDate,
-                "kind": newMessage.kind.messageKindString,
-                "messageText": contentString
-                ] as [String : Any]
-            print("---[MessageModel]message階層へ保存するdic作りが終わり、これからこれをFirestoreに保存し始めます。")
+                "kind": newMessage.kind.messageKindString,  //ここに種類をテキストとして書いておく事が重要。
+                "messageText": contentString,
+                "thumbnailURL": thumbnailURL] as [String : Any]
+            
             Firestore.firestore().collection("chatRooms").document(chatRoomID)
                 .collection("messages").document(messageId).setData(dictionaryForMessageInfo) { (error) in
                     if error != nil{print("Firestoreへのmessage情報記入に失敗しました。\(error!)"); return}
-                    print("---[MessageModel]message階層への保存が終了しcompletionを呼びます。")
+                    
                     completion()
             }
         }
@@ -121,6 +121,7 @@ struct Media: MediaItem{
     var image: UIImage?
     var placeholderImage: UIImage
     var size: CGSize
+    var thumbnailURL = ""
 }
 
 extension MessageKind{
@@ -129,11 +130,11 @@ extension MessageKind{
         case .text(_):
             return "text"
         case .attributedText(_):
-            return "attributed_text"
+            return "attributedText"//この文字列をChatRoomVCのfetchメソッドの中で使う
         case .photo(_):
-            return "photo"
+            return "photo"//この文字列をChatRoomVCのfetchメソッドの中で使う
         case .video(_):
-            return "video"
+            return "video"//この文字列をChatRoomVCのfetchメソッドの中で使う
         case .location(_):
             return "location"
         case .emoji(_):

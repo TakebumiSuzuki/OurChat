@@ -12,23 +12,10 @@ import SDWebImage
 
 class ConversationListCell: UITableViewCell {
     
-    private let dateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        df.timeStyle = .medium
-        df.dateStyle = .medium
-        return df
-    }()
-    
-    
     var chatRoomObject: ChatRoom?{
         didSet{
-            setFriendPicture()
-            if let chatRoomObject = chatRoomObject{
-                messageTextLabel.text = chatRoomObject.latestMessageText
-                let dateInfo = chatRoomObject.latestMessageTime.dateValue()
-                timeLabel.text = dateFormatter.string(from: dateInfo)
-                newMessageNumberLabel.text = String(chatRoomObject.numberOfNewMessages)
-            }
+            setOtherInfo()
+            setFriendPictureAndName()
         }
     }
     
@@ -49,9 +36,15 @@ class ConversationListCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .white
-        label.font = .systemFont(ofSize: 15, weight: .light)
-        label.text = "name"
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
         return label
+    }()
+    
+    private let inOutSignView: UIImageView = {
+        let sign = UIImageView()
+        sign.translatesAutoresizingMaskIntoConstraints = false
+        sign.contentMode = .scaleAspectFit
+        return sign
     }()
     
     private let messageTextLabel: UILabel = {
@@ -60,7 +53,6 @@ class ConversationListCell: UITableViewCell {
         label.numberOfLines = 2
         label.textColor = .white
         label.font = .systemFont(ofSize: 16, weight: .regular)
-        label.text = "今日は、今テストで今日は"
         return label
     }()
     
@@ -68,17 +60,20 @@ class ConversationListCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .white
-        label.font = .systemFont(ofSize: 12, weight: .thin)
-        label.text = "12:00"
+        label.font = .systemFont(ofSize: 13, weight: .thin)
         return label
     }()
     
     private let newMessageNumberLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .red
-        label.font = .systemFont(ofSize: 12, weight: .thin)
-        label.text = "0"
+        label.textColor = .white
+        label.backgroundColor = .red
+        label.clipsToBounds = true
+        label.layer.cornerRadius = 11
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 14, weight: .bold)
+        label.isHidden = true
         return label
     }()
     
@@ -91,61 +86,100 @@ class ConversationListCell: UITableViewCell {
         setupViews()
     }
     
-    private func setFriendPicture(){
+    private func setOtherInfo(){
         
-        if let chatRoomObject = chatRoomObject {
-            chatRoomObject.members.forEach { (memberUID) in
-                if memberUID != chatRoomObject.myUID{
+        guard let chatRoomObject = chatRoomObject else{return}
+        
+        messageTextLabel.text = chatRoomObject.latestMessageText
+        let date = chatRoomObject.latestMessageTime.dateValue()
+        timeLabel.text = Date.getString(date: date)
+    }
+    
+    
+    private func setFriendPictureAndName(){
+        
+        guard let chatRoomObject = chatRoomObject else{return}
+        chatRoomObject.members.forEach { (memberUID) in
+            if memberUID != chatRoomObject.myUID{ //myUIDはFireStoreからの情報ではなく、インスタンス化時に現在ログインしているクライアントユーザーのUIDを入れている。
+                let friendUID = memberUID
+                
+                Firestore.firestore().collection("users").document(friendUID).getDocument { [weak self](snapshot, error) in
                     
-                    let friendUID = memberUID
-                    Firestore.firestore().collection("users").document(friendUID).getDocument { [weak self](snapshot, error) in
+                    guard let self = self else{return}
+                    if error != nil{print("Firestoreから友達データを取得するのに失敗しました"); return}
+                    guard let snapshot = snapshot, let dictionary = snapshot.data(),
+                        let friendName = dictionary["displayName"] as? String,
+                        let friendPictureURL = dictionary["pictureURL"] as? String else{return}
                         
-                        guard let self = self else{return}
-                        if error != nil{print("Firestoreから友達データを取得するのに失敗しました"); return}
-                        guard let snapshot = snapshot else{return}
-                        guard let dictionary = snapshot.data() else{return}
-                        guard let url = dictionary["pictureURL"] as? String else{return}
-                        guard let friendName = dictionary["displayName"] as? String else{return}
-                        DispatchQueue.main.async {
-                            self.imagePicture.sd_setImage(with: URL(string: url), placeholderImage: nil)
-                            self.nameLabel.text = friendName
-                        }
+                    DispatchQueue.main.async {
+                        self.imagePicture.sd_setImage(with: URL(string: friendPictureURL), placeholderImage: nil)
+                        self.nameLabel.text = friendName
                     }
                 }
+                
+                let chatRoomID = chatRoomObject.chatRoomID
+                Firestore.firestore().collection("chatRooms").document(chatRoomID).getDocument { [weak self](snapshot, error) in
+                    
+                    guard let self = self else{return}
+                    if error != nil{print("chatRoom情報を取得するのに失敗しました"); return}
+                    
+                    guard let snapshot = snapshot, let dictionary = snapshot.data(),
+                        let numberOfNewMessages = dictionary["numberOfNewMessages"] as? Int,
+                        let latestMessageSenderUID = dictionary["latestMessageSenderUID"] as? String else{return}
+                        
+                    if latestMessageSenderUID == friendUID{
+                        DispatchQueue.main.async {
+                            self.newMessageNumberLabel.isHidden = numberOfNewMessages > 0 ? false : true
+                            self.newMessageNumberLabel.text = String(numberOfNewMessages)
+                            self.inOutSignView.image = UIImage(systemName: "arrow.down.left")
+                            self.inOutSignView.tintColor = .red
+                        }
+                    }
+                    if latestMessageSenderUID == chatRoomObject.myUID{
+                        DispatchQueue.main.async{
+                            self.inOutSignView.image = UIImage(systemName: "arrow.up.right")
+                            self.inOutSignView.tintColor = .green
+                        }
+                    }
+               }
             }
         }
     }
-    
     
     private func setupViews(){
         
         self.contentView.frame = self.bounds
         self.contentView.addSubview(imagePicture)
         self.contentView.addSubview(nameLabel)
+        self.contentView.addSubview(inOutSignView)
         self.contentView.addSubview(messageTextLabel)
         self.contentView.addSubview(timeLabel)
         self.contentView.addSubview(newMessageNumberLabel)
         
-        imagePicture.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 10).isActive = true
+        imagePicture.leadingAnchor.constraint(equalTo: self.contentView.leadingAnchor, constant: 15).isActive = true
         imagePicture.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor).isActive = true
         imagePicture.heightAnchor.constraint(equalToConstant: 50).isActive = true
         imagePicture.widthAnchor.constraint(equalTo: imagePicture.heightAnchor).isActive = true
         
+        nameLabel.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 8).isActive = true
         nameLabel.leadingAnchor.constraint(equalTo: imagePicture.trailingAnchor, constant: 12).isActive = true
-        nameLabel.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 9).isActive = true
         
-        messageTextLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor).isActive = true
-        messageTextLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4).isActive = true
-        //messageTextLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor, constant: 15).isActive = true
-        //messageTextLabel.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor, constant: -13).isActive = true
+        inOutSignView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 2).isActive = true
+        inOutSignView.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor, constant: 2).isActive = true
+        inOutSignView.widthAnchor.constraint(equalToConstant: 20).isActive = true
+        inOutSignView.widthAnchor.constraint(equalTo: inOutSignView.heightAnchor).isActive = true
         
-        messageTextLabel.widthAnchor.constraint(equalToConstant: self.contentView.frame.width - 62).isActive = true
+        messageTextLabel.topAnchor.constraint(equalTo: inOutSignView.topAnchor).isActive = true
+        messageTextLabel.leadingAnchor.constraint(equalTo: inOutSignView.trailingAnchor, constant: 8).isActive = true
+        messageTextLabel.widthAnchor.constraint(equalToConstant: self.frame.width - 100).isActive = true
         
-        timeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -25).isActive = true
-        timeLabel.bottomAnchor.constraint(equalTo: messageTextLabel.bottomAnchor).isActive = true
+        timeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -17).isActive = true
+        timeLabel.bottomAnchor.constraint(equalTo: nameLabel.bottomAnchor).isActive = true
         
-        newMessageNumberLabel.leadingAnchor.constraint(equalTo: timeLabel.leadingAnchor).isActive = true
-        newMessageNumberLabel.bottomAnchor.constraint(equalTo: timeLabel.topAnchor, constant: 10).isActive = true
+        newMessageNumberLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30).isActive = true
+        newMessageNumberLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 8).isActive = true
+        newMessageNumberLabel.widthAnchor.constraint(equalToConstant: 22).isActive = true
+        newMessageNumberLabel.widthAnchor.constraint(equalTo: newMessageNumberLabel.heightAnchor).isActive = true
     }
     
     

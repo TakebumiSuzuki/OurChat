@@ -11,12 +11,27 @@ import Firebase
 import SDWebImage
 
 protocol SearchFriendCellDelegate{
-    func showAddingFriendAlert(friendUID: String, friendName: String)
+    func showAddingFriendAlert(friendUID: String, friendName: String, completion: @escaping () -> Void)
+    func showUnfriendAlert(friendUID: String, friendName: String, completion: @escaping () -> Void)
 }
 
 class SearchFriendCell: UITableViewCell {
     
     var delegate: SearchFriendCellDelegate?
+    
+    var myFriendListDic = ["" : ""]{
+        didSet{
+            let friendUID = friendUserObject?.authUID
+            for keyValuePair in myFriendListDic{
+                print("keyValuePir")
+                if keyValuePair == (key: friendUID, value: "confirmed"){
+                    
+                    setAddButton()
+                }
+                
+            }
+        }
+    }
     
     var friendUserObject: User?{
         didSet{
@@ -24,7 +39,10 @@ class SearchFriendCell: UITableViewCell {
                 imagePicture.sd_setImage(with: URL(string: url), placeholderImage: nil)
             }
             nameLabel.text = friendUserObject?.displayName
+            
+            
         }
+        
     }
     
     private var imagePicture: UIImageView = {
@@ -39,7 +57,6 @@ class SearchFriendCell: UITableViewCell {
         return imageView
     }()
     
-    
     private var nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -47,23 +64,24 @@ class SearchFriendCell: UITableViewCell {
         return label
     }()
     
-    lazy var addFriendButton: UIButton = {
-        let button = UIButton(type: .system)
+    private var addFriendButton: MyCustomButton = {
+        let button = MyCustomButton(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
+        print("button created")
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Add", for: .normal)
-        button.tintColor = .white
-        button.backgroundColor = .link
-        button.layer.cornerRadius = 7
-        button.clipsToBounds = true
-        button.addTarget(self, action: #selector(addFriendButtonTapped), for: .touchUpInside)
+        
         return button
     }()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
+        
         setupViews()
+        addFriendButton.addTarget(self, action: #selector(addFriendButtonTapped), for: .touchUpInside)
+        
     }
+    
+    
     
     private func setupViews(){
         
@@ -83,8 +101,12 @@ class SearchFriendCell: UITableViewCell {
         
         addFriendButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -35).isActive = true
         addFriendButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
-        addFriendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        addFriendButton.widthAnchor.constraint(equalToConstant: 110).isActive = true
         addFriendButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+    }
+    
+    private func setAddButton(){
+        addFriendButton.isAdded = true
     }
     
     @objc private func addFriendButtonTapped(){
@@ -93,8 +115,24 @@ class SearchFriendCell: UITableViewCell {
             print("friendUIDオブジェクトからUIDとfriendNameを取得することに失敗しました。")
             return
         }
-        delegate?.showAddingFriendAlert(friendUID: friendUID, friendName: friendName)
+        if addFriendButton.isAdded == false{
+            delegate?.showAddingFriendAlert(friendUID: friendUID, friendName: friendName, completion: {
+                self.switchButtonState()
+            })
+        }else{
+            delegate?.showUnfriendAlert(friendUID: friendUID, friendName: friendName, completion: {
+                self.switchButtonState()
+            })
+        }
+        
+        
+        
     }
+    
+    private func switchButtonState(){
+        addFriendButton.switchButtonState()
+    }
+    
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)

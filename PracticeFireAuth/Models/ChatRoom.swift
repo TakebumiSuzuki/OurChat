@@ -15,7 +15,8 @@ struct ChatRoom{
     var latestMessageTime: Timestamp
     var latestMessageText: String
     var latestMessageSenderUID: String
-    var numberOfNewMessages: Int
+    var numberOfNewMessages: Int = 0
+    var chatRoomID: String
     
     var myUID: String = "" //これだけはFireStoreからの情報ではなく、インスタンス化時に現在ログインしているクライアントユーザーのUIDを入れる。
     
@@ -25,5 +26,6 @@ struct ChatRoom{
         self.latestMessageText = dic["latestMessageText"] as? String ?? ""
         self.latestMessageSenderUID = dic["latestMessageSenderUID"] as? String ?? ""
         self.numberOfNewMessages = dic["numberOfNewMessages"] as? Int ?? 0
+        self.chatRoomID = dic["chatRoomID"] as? String ?? ""
     }
 }

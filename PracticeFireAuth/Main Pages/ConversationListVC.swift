@@ -10,15 +10,16 @@ import UIKit
 import Firebase
 import SDWebImage
 
-
 class ConversationListVC: UIViewController {
     
     private var chatRooms: [ChatRoom] = []
     private var myUID: String = ""{
         didSet{
-            guard let myDisplayName = Auth.auth().currentUser?.displayName else{print("Authから自分のdisplayNameを取得するのに失敗しました"); return}
+            
+            guard let myDisplayName = Auth.auth().currentUser?.displayName
+                else{print("Authから自分のdisplayNameを取得するのに失敗しました"); return}
+            //currentUserメソッドは説明によると、synchronouslyにキャッシュされたUserの情報を返すという事なので、compハンドラーなどは存在しない。
             DispatchQueue.main.async {
-                print("displayNameを取得したのでtitleに表示します")
                 self.navigationItem.title = myDisplayName
             }
         }
@@ -32,14 +33,17 @@ class ConversationListVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print("view1 did load")
+        navigationController?.navigationBar.prefersLargeTitles = true
         checkLoginStatus()
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(ConversationListCell.self, forCellReuseIdentifier: "myCell")
+        tableView.register(ConversationListCell.self, forCellReuseIdentifier: "conversationListCell")
         view.backgroundColor = .white
         setupViews()
-        
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        navigationController?.tabBarController?.tabBar.isHidden = false
     }
     
     
@@ -51,7 +55,6 @@ class ConversationListVC: UIViewController {
             if let user = user{
                 print("StateDidChangeListenerが発動し自分のUIDのログイン状態が確認されました")
                 self.myUID = user.uid
-                print("myUIDの方からもどりfetchChatRoom()実行に入ります。")
                 self.fetchChatRooms()
             }else{
                 print("StateDidChangeListenerが発動しログアウトが確認されました")
@@ -71,36 +74,33 @@ class ConversationListVC: UIViewController {
     }
     
     private func setupViews(){
-        print("setupViews発動")
         view.addSubview(tableView)
         tableView.frame = view.bounds
         tableView.backgroundColor = .lightGray
     }
 
     private func fetchChatRooms(){
-        print("myUIDは\(myUID)")
+        
         Firestore.firestore().collection("chatRooms").whereField("members", arrayContains: myUID)
             .addSnapshotListener { [weak self] (snapshot, error) in
-                print("fetchChatRoomsのlistner受信")
+                
                 guard let self = self else{return}
                 if error != nil{print("chatRoom情報のダウンロードに失敗しました。\(error!)"); return}
                 guard let snapshot = snapshot else{return}
                 self.chatRooms.removeAll()
                 
-                print("ConversationListVCより。自分が関係するchatroomの数\(snapshot.count)")
                 snapshot.documents.forEach { (eachDocument) in
                     let dictionary = eachDocument.data()
-                    
                     var chatRoom = ChatRoom(dic: dictionary)
-                    chatRoom.myUID = self.myUID
+                    chatRoom.myUID = self.myUID  //ここで代入したmyUID情報はcell生成時に使う。
                     self.chatRooms.append(chatRoom)
                 }
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
-                
         }
     }
+    
 }
 
 
@@ -109,20 +109,20 @@ extension ConversationListVC: UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 80
     }
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return chatRooms.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "myCell", for: indexPath) as! ConversationListCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "conversationListCell", for: indexPath) as! ConversationListCell
         let chatRoom = chatRooms[indexPath.row]
         cell.chatRoomObject = chatRoom
+        
+        
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -135,15 +135,8 @@ extension ConversationListVC: UITableViewDelegate, UITableViewDataSource{
             }
         }
         
-        var chatRoomID = ""
-        if myUID > friendUID{
-            chatRoomID  = myUID + "_" + friendUID
-        }else{
-            chatRoomID = friendUID + "_" + myUID
-        }
-        
         let chatRoomVC = ChatRoomVC()
-        chatRoomVC.chatRoomID = chatRoomID
+        chatRoomVC.chatRoomID = chatRoom.chatRoomID
         chatRoomVC.friendUID = friendUID
         navigationController?.pushViewController(chatRoomVC, animated: true)
     }

@@ -14,8 +14,8 @@ class SettingVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        view.backgroundColor = .red
+        navigationController?.navigationBar.prefersLargeTitles = true
+        view.backgroundColor = .white
         title = "Account"
         setViews()
     }

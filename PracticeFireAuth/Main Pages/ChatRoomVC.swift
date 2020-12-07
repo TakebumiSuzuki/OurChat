@@ -10,34 +10,34 @@ import UIKit
 import Firebase
 import MessageKit
 import InputBarAccessoryView
+import AVFoundation
+import AVKit
+import SafariServices
 
 
 class ChatRoomVC: MessagesViewController{
     
-    let dateFormatter: DateFormatter = {
+    let dateFormatter: DateFormatter = {  //これはメッセージの日付が変わった時のセパレーターを作るために使われる。
         let df = DateFormatter()
-        df.locale = .current
-        df.timeZone   = TimeZone(identifier: "Asia/Tokyo")
+        //df.locale = Locale(identifier: "ja_JP")
+        //df.timeZone   = TimeZone(identifier: "Asia/Tokyo") //もし日本時間を試したいなら
         return df
     }()
-    var chatRoomID = ""  //これら2つの変数の値は、前の画面から必ず引き渡される。
-    var friendUID = ""
-    var friendPictureURL = ""
+    var chatRoomID = ""  //この変数の値は、前の画面から必ず引き渡される。
+    var friendUID = ""   //この変数の値は、前の画面から必ず引き渡される。
+    private var friendName = ""
+    private var friendPictureURL = ""
     
     
     private var myUID = "" {   //viewDidLoadからのsetProperties()内でAuthから引っ張ってきて代入。
         didSet{
-            print("3.myUIDがセットされ現在didSet内です。")
             guard let name = Auth.auth().currentUser?.displayName else{return}
-            print("3.5.myDisplayNameをAuthから取得し、myDisplayNameに代入するところです。")
             myDisplayName = name
-            print("5.myDisplayNameをAuthから取得し、myDisplayNameに代入が終わりました。")
         }
     }
     private var myDisplayName = "" {     //上のmyUIDのcomputeされる。ここではSenderオブジェクトを作て、代入。
         didSet{
             sender = Sender(senderId: myUID, displayName: myDisplayName)
-            print("4.decentなsenderが作られました \(sender)")
         }
     }
     private var sender = Sender(senderId: "", displayName: "")
@@ -47,16 +47,70 @@ class ChatRoomVC: MessagesViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("1.viewDidLoad発動")
-        setProperties()
-        print("8. これからdelegate設定に入ります")
+        
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesDisplayDelegate = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messageCellDelegate = self
         messageInputBar.delegate = self
-        messageInputBar.sendButton.tintColor = .red
+        navigationController?.tabBarController?.tabBar.isHidden = true
         
+        setProperties()
+        avatarConfiguration()
+        setupInputButton()
+        resetNewMessageNumber()
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) { //viewDidDisappearだと動かなかったのでWillAppearにした。
+        super.viewWillDisappear(true)
+        
+        resetNewMessageNumber()
+    }
+    
+
+    private func resetNewMessageNumber(){
+        
+        Firestore.firestore().collection("chatRooms").document(chatRoomID).getDocument { [weak self](snapshot, error) in
+            
+            guard let self = self else{return}
+            if error != nil{print("chatRoom情報(newMessageNumber)を取得するのに失敗しました"); return}
+            guard let snapshot = snapshot, let document = snapshot.data(),
+                var numberOfNewMessages = document["numberOfNewMessages"] as? Int,
+                let latestMessageSenderUID = document["latestMessageSenderUID"] as? String else{return}
+            print("------\(latestMessageSenderUID)&&&\(self.friendUID)")
+            if latestMessageSenderUID == self.friendUID{
+                print("number was reset to 0 because latestMessageSenderUID == self.friendUID")
+                numberOfNewMessages = 0
+            }
+            
+            Firestore.firestore().collection("chatRooms").document(self.chatRoomID).updateData(["numberOfNewMessages" : numberOfNewMessages])
+        }
+    }
+    
+    private func setProperties(){
+        
+        guard let uid = Auth.auth().currentUser?.uid else{print("Authから自分のUIDの取得に失敗しました"); return}
+        
+        myUID = uid  //ここでmyUIDに値がセットされると、下にいくよりも先にdidSetの方を実行する。
+        
+        Firestore.firestore().collection("users").document(friendUID).getDocument { [weak self](snapshot, error) in
+            
+            guard let self = self else{return}
+            if error != nil{print("FireStoreからfriend nameの取得に失敗しました\(error!)"); return}
+            
+            guard let snapshot = snapshot, let dictionary = snapshot.data() else{return}
+            guard let friendName = dictionary["displayName"] as? String else{print("FireStoreドキュメントにfriend nameがないようです"); return}
+            DispatchQueue.main.async {
+                self.friendName = friendName
+                self.navigationItem.title = friendName
+            }
+        }
+        fetchMessages()
+    }
+    
+    
+    private func avatarConfiguration(){
         
         if let layout = self.messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout {
             layout.setMessageOutgoingAvatarSize(.zero)
@@ -66,7 +120,6 @@ class ChatRoomVC: MessagesViewController{
             layout.setMessageIncomingMessageTopLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 70, bottom: 0, right: 0)))
             layout.setMessageIncomingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 70, bottom: 0, right: 0)))
         }
-        setupInputButton()
     }
     
     private func setupInputButton() {  //チャット画面の左下に現れる添付ボタン。 InputBarAccessoryKitについてくるInputBarButtonItemクラスを使う。
@@ -74,13 +127,13 @@ class ChatRoomVC: MessagesViewController{
         let button = InputBarButtonItem()
         button.setSize(CGSize(width: 35, height: 35), animated: false)
         button.setImage(UIImage(systemName: "camera.on.rectangle"), for: .normal)
+        button.tintColor = .lightGray
         button.onTouchUpInside { [weak self] _ in    //messageInputBarについてくるメソッド
             guard let self = self else{return}
             self.cameraButtonPressed()
         }
         messageInputBar.setLeftStackViewWidthConstant(to: 50, animated: false) //messageInputBarについてくるメソッド
         messageInputBar.setStackViewItems([button], forStack: .left, animated: false) //messageInputBarについてくるメソッド
-        
     }
     
     func cameraButtonPressed(){
@@ -128,41 +181,17 @@ class ChatRoomVC: MessagesViewController{
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
-        (print("9.viewwillappear発動しました。オートのreloadがこの直後に行われると思われます。"))
-        
-        //self.messagesCollectionView.scrollToBottom(animated: false)
+        //この後に自動のmessagesCollectionView.reloadData()が必ず行われる。
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
-        
-        (print("viewDIDappear発動しました。"))
-    }
-    
-    private func setProperties(){
-        
-        guard let uid = Auth.auth().currentUser?.uid else{print("Authから自分のUIDの取得に失敗しました"); return}
-        print("2.myUIDの取得が終わったところです")
-        myUID = uid  //ここでmyUIDに値がセットされると、下にいくよりも先にdidSetの方を実行する。
-        print("6.myUIDの取得が終わりセットされ、今からFirestoreにfirendドキュメントを得るためのコマンドを実行します。----")
-        Firestore.firestore().collection("users").document(friendUID).getDocument { [weak self](snapshot, error) in
-            print("12.friendNameを得るためのDocumentの取得が終わりました。")
-            guard let self = self else{return}
-            if error != nil{print("FireStoreからfriend nameの取得に失敗しました\(error!)"); return}
-            
-            guard let snapshot = snapshot, let dictionary = snapshot.data() else{return}
-            guard let friendName = dictionary["displayName"] as? String else{print("FireStoreドキュメントにfriend nameがないようです"); return}
-            DispatchQueue.main.async {
-                self.navigationItem.title = friendName
-                print("13.friendNameを得るためのFirestore getDocumentの最後のDispatchqeueです")
-            }
-        }
-        fetchMessages()
-        
     }
     
     
     
-//MARK: - Fetch Messages
+    
+    
+//MARK: - Fetch Messages メッセージ配列をダウンロードする一番大切な部分。
     private func fetchMessages(){
         
         Firestore.firestore().collection("chatRooms").document(chatRoomID).collection("messages").order(by: "sentDate", descending: false).addSnapshotListener {[weak self] (snapshot, error) in
@@ -171,7 +200,7 @@ class ChatRoomVC: MessagesViewController{
             if error != nil{print("messageドキュメントの取得に失敗しました。\(error!)"); return}
             guard let snapshot = snapshot else{return}
             
-            self.messages.removeAll()
+            self.messages.removeAll() //スナップショットリスナーはキャッシュを使い、常に完全なセットのsnapshotデータを返してくれるのでここで全て空にする。
             snapshot.documents.forEach { (eachDocument) in
                 
                 let dictionary = eachDocument.data()
@@ -183,26 +212,32 @@ class ChatRoomVC: MessagesViewController{
                 
                 let messageId = dictionary["messageId"] as? String ?? ""
                 
-                //Firestoreにセーブする時はDateでも、それを今度はDLするとTimestampフォーマットになっているのでdateFormatterを使うため元に戻す必要あり
+                //Firestoreにセーブする時はDateでも、それを今度はDLするとTimestampフォーマット変換されてしまっているので元のDateフォーマットに戻す必要あり
                 let sentDateTimestampFormat = dictionary["sentDate"] as? Timestamp ?? Timestamp()
                 let sentDate = sentDateTimestampFormat.dateValue()
                 
-                let color = senderID == self.myUID ? UIColor(white: 1.0, alpha: 1) : UIColor(white: 0.0, alpha: 1)
-                
-                
                 let kindString = dictionary["kind"] as? String ?? ""
                 let messageText = dictionary["messageText"] as? String ?? ""
-                let kind: MessageKind
                 
+                let kind: MessageKind
                 switch kindString{
-                case "text":
+                case "attributedText":     //FireStoreに保存する時にプレインのStringに変換したので、ここでまたAttributedStringに戻す。
+                    let color = senderID == self.myUID ? UIColor(white: 1.0, alpha: 1) : UIColor(white: 0.0, alpha: 0.7)
                     kind = .attributedText(NSAttributedString(string: messageText,attributes: [.font: UIFont.preferredFont(forTextStyle: .title3),.foregroundColor: color]))
                 case "photo":
-                    guard let url = URL(string: messageText), let placeholderImage = UIImage(systemName: "cloud") else{return}
-                    let media = Media(url: url, image: nil, placeholderImage: placeholderImage, size: CGSize(width: 300, height: 200))
+                    guard let url = URL(string: messageText), let placeholderImage = UIImage(systemName: "photo") else{return}
+                    let media = Media(url: url, image: nil, placeholderImage: placeholderImage,
+                                      size: CGSize(width: self.messagesCollectionView.frame.width*0.7,
+                                                   height: self.messagesCollectionView.frame.width*0.7*2/3))
                     kind = .photo(media)
+                    //ちなみにこの部分でちゃんとMediaオブジェクトが作られていても、displayDelegateの設定ができていないと写真は表示されないので注意。
                 case "video":
-                    return
+                    guard let url = URL(string: messageText),
+                        let placeholderImage = UIImage(systemName: "video"),
+                        let thubmnailURL = dictionary["thumbnailURL"] as? String else{return}
+                    let media = Media(url: url, image: nil, placeholderImage: placeholderImage, size: CGSize(width: self.messagesCollectionView.frame.width*0.7,height: self.messagesCollectionView.frame.width*0.7*2/3),
+                                      thumbnailURL: thubmnailURL)
+                    kind = .video(media)
                 default:
                     return
                 }
@@ -218,11 +253,31 @@ class ChatRoomVC: MessagesViewController{
         }
     }
     
+    func saveNewMessageNumber(){  //テキストの送信ボタンを押した時も、写真、画像を送った時もコンプリーションから呼ばれる。
+        //chatRoomドキュメントにある新しい未読数を記録する
+        Firestore.firestore().collection("chatRooms").document(chatRoomID).getDocument { [weak self](snapshot, error) in
+            
+            guard let self = self else{return}
+            if error != nil{print("chatRoom情報(newMessageNumber)を取得するのに失敗しました"); return}
+            guard let snapshot = snapshot, let document = snapshot.data() else {return}
+            var numberOfNewMessages: Int
+            
+            if let number = document["numberOfNewMessages"] as? Int { //すでにchatRoomドキュメントにnumbOfMessの記入がある場合
+                numberOfNewMessages = number
+                numberOfNewMessages += 1
+            }else{
+                numberOfNewMessages = 1    //chatRoomドキュメントにnumbOfMessの記入がない場合(初めてのチャットの場合)
+            }
+            Firestore.firestore().collection("chatRooms").document(self.chatRoomID)
+                .updateData(["numberOfNewMessages" : numberOfNewMessages])
+        }
+    }
+    
 }
 
 
 
-//MARK: - UIImagePicker Delegate Methods
+//MARK: - 写真と動画の選択/送信
 extension ChatRoomVC: UIImagePickerControllerDelegate, UINavigationControllerDelegate{
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -232,27 +287,88 @@ extension ChatRoomVC: UIImagePickerControllerDelegate, UINavigationControllerDel
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         dismiss(animated: true, completion: nil)
-        guard let image = info[.editedImage] as? UIImage, let imageData = image.jpegData(compressionQuality: 0.5) else{
-            print("画像の取得または圧縮に失敗しました"); return
+        
+        if let image = info[.editedImage] as? UIImage, let imageData = image.jpegData(compressionQuality: 0.4){
+            
+            FireStorageManager.uploadImage(data: imageData, chatRoomID: chatRoomID, myUID: myUID) { [weak self](result) in
+                //画像はFireStorageに、パスを"imagesUploadedToChatRooms"/chatRoomID/myUID/ランダム名のようにして保存。
+                guard let self = self else{return}
+                
+                switch result{
+                case .success(let downloadURL):
+                    guard let placeholder = UIImage(systemName: "photo") else {return}
+                    //これからFireStoreに保存するにもかかわらずここでオブジェクトを作っている理由は、オフラインになった時にも送れるようにするため。
+                    let media = Media(url: downloadURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 200))
+                    let message = Message(sender: self.sender, messageId: UUID().uuidString, sentDate: Date(), kind: .photo(media))
+                    self.messages.append(message)
+                    DispatchQueue.main.async {
+                        self.messagesCollectionView.reloadData()
+                        self.messagesCollectionView.scrollToBottom(animated: true)
+                    }
+                    Message.saveNewMessageToFireStore(newMessage: message, myUID: self.myUID, friendUID: self.friendUID, friendName: self.friendName, chatRoomID: self.chatRoomID) {
+                        self.saveNewMessageNumber()
+                    }
+                case .failure(let error):
+                    print("FireStorageへのデータのセーブに失敗しました\(error)"); return
+                }
+            }
         }
         
-        FireStorageManager.uploadMediaData(data: imageData, chatRoomID: chatRoomID, uid: myUID) { [weak self](result) in
+        if let videoLocalURL = info[.mediaURL] as? URL{
             
-            guard let self = self else{return}
+            let dispatchGroup = DispatchGroup()
+            dispatchGroup.enter()
+            var thumbailStringURL = ""
+            let asset = AVAsset(url: videoLocalURL)
+            let imageGenerator = AVAssetImageGenerator(asset: asset)
+            do{
+                let thumbnailCGImage = try imageGenerator.copyCGImage(at: CMTime(seconds: 3, preferredTimescale: 60), actualTime: nil)
+                let thumbnailUIImage = UIImage(cgImage: thumbnailCGImage)
+                if let imageData = thumbnailUIImage.jpegData(compressionQuality: 0.4){
+                    FireStorageManager.uploadVideoThumbnail(data: imageData, chatRoomID: chatRoomID, myUID: myUID) { (result) in
+                        switch result{
+                        case .success(let thumbnailURL):
+                            thumbailStringURL = thumbnailURL.absoluteString
+                        case .failure(let error):
+                            print("FireStorageへの動画Thumbnailデータのセーブに失敗しました\(error)")
+                        }
+                    }
+                 }
+                dispatchGroup.leave()
+            }catch let error{
+                print("動画のThumbnail作成中にエラーです\(error)")
+                dispatchGroup.leave()
+            }
             
-            switch result{
-            case .success(let downloadURL):
+            
+            dispatchGroup.enter()
+            FireStorageManager.uploadVideo(fileURL: videoLocalURL, chatRoomID: chatRoomID, myUID: myUID) { (result) in
                 
-                guard let url = URL(string: downloadURL), let placeholder = UIImage(systemName: "plus") else {return}
-                let media = Media(url: url, image: nil, placeholderImage: placeholder, size: CGSize(width: 200, height: 200))
-                let message = Message(sender: self.sender, messageId: UUID().uuidString, sentDate: Date(), kind: .photo(media))
-                self.messages.append(message)
-                self.messagesCollectionView.reloadData()
-                Message.saveNewMessageToFireStore(newMessage: message, myUID: self.myUID, friendUID: self.friendUID, chatRoomID: self.chatRoomID) {
-                    //
+                dispatchGroup.leave()
+                dispatchGroup.notify(queue: .global()) {
+                    switch result{
+                    case .success(let downloadURL):
+                        guard let placeholder = UIImage(systemName: "video") else {return}
+                        
+                        let media = Media(url: downloadURL, image: nil, placeholderImage: placeholder,
+                                          size: CGSize(width: 300, height: 200),
+                                          thumbnailURL: thumbailStringURL)
+                        let message = Message(sender: self.sender, messageId: UUID().uuidString, sentDate: Date(), kind: .video(media))
+                        self.messages.append(message)
+                        DispatchQueue.main.async {
+                            self.messagesCollectionView.reloadData()
+                            self.messagesCollectionView.scrollToBottom(animated: true)
+                            print(media.thumbnailURL)
+                        }
+                        Message.saveNewMessageToFireStore(newMessage: message, myUID: self.myUID, friendUID: self.friendUID, friendName: self.friendName, chatRoomID: self.chatRoomID) {
+                            self.saveNewMessageNumber()
+                        }
+                        
+                    case .failure(let error):
+                        print("FireStorageへのデータのセーブに失敗しました\(error)"); return
+                    }
                 }
-            case .failure(let error):
-                print("FireStorageへのデータのセーブに失敗しました\(error)"); return
+                
             }
         }
     }
@@ -262,58 +378,39 @@ extension ChatRoomVC: UIImagePickerControllerDelegate, UINavigationControllerDel
 
 
 //MARK: - DataSource
-
 extension ChatRoomVC: MessagesDataSource{
     
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
-        print("MessageDataSource1")
         return messages.count
     }
-    
     func currentSender() -> SenderType {
-        
         return sender
     }
-    
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
-        
         return messages[indexPath.section]
     }
-    
-    
+    //日付が変わるごとに挿入される。
     func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
         dateFormatter.dateStyle = .long
+        dateFormatter.timeStyle = .none
         let dateStringToDisplay = NSAttributedString(string: dateFormatter.string(from: message.sentDate),
             attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1),
                          .foregroundColor: UIColor.darkGray]
         )
         return dateStringToDisplay
     }
-    
+    //各メッセージ下の送信時間
     func messageBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
         //MessageKitのソースコードにあるMessageKitDateFormatterはSwiftのDateオブジェクトをmodifyしたものだったので、
         //それをコピペして、自分なりに修正して以下のブロックを書いた。doesRelativeDateFormattingというのがポイントとなるプロパティ。
-        //正し、同日の場合、英語ではToday,日本語では今日が連続して表示されるので、うざい。そこら辺を消すための行も付け足した。
+        //但し、同日の場合、英語ではToday,日本語では今日が連続して表示されるので、うざい。そこら辺を消すための行も付け足した。
         
-        switch true {
-        case Calendar.current.isDateInToday(message.sentDate) || Calendar.current.isDateInYesterday(message.sentDate):
-            dateFormatter.doesRelativeDateFormatting = true
-            dateFormatter.dateStyle = .short
-            dateFormatter.timeStyle = .short
-        case Calendar.current.isDate(message.sentDate, equalTo: Date(), toGranularity: .weekOfYear):
-            dateFormatter.dateFormat = "EEEE h:mm a"
-        case Calendar.current.isDate(message.sentDate, equalTo: Date(), toGranularity: .year):
-            dateFormatter.dateFormat = "E, d MMM, h:mm a"
-        default:
-            dateFormatter.dateFormat = "MMM d, yyyy, h:mm a"
-        }
-        //dateFormatter.locale = Locale(identifier: "ja_JP")  //もし日本語表記を試したい場合はこの行をオンに。
-        let dateString = dateFormatter.string(from: message.sentDate)
+        let dateString = Date.getString(date: message.sentDate)
         let dateStringVer2 = dateString.replacingOccurrences(of: "Today, ", with: "")
         let dateStringVer3 = dateStringVer2.replacingOccurrences(of: "今日 ", with: "")
+        
         return NSAttributedString(string: dateStringVer3, attributes: [.font: UIFont.preferredFont(forTextStyle: .caption2), .foregroundColor: UIColor.darkGray])
     }
-    
 }
 
 
@@ -331,13 +428,22 @@ extension ChatRoomVC: MessagesDisplayDelegate{
     
     // メッセージの背景色を変更している（デフォルトは自分：緑、相手：グレー）
     func backgroundColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
-        return isFromCurrentSender(message: message) ?
+        switch message.kind{
+            
+        case .photo(_):
+            return UIColor.lightGray
+        case .video(_):
+            return UIColor.lightGray
+        default:
+            return isFromCurrentSender(message: message) ?
             UIColor(red: 69/255, green: 193/255, blue: 89/255, alpha: 1) :
             UIColor(red: 230/255, green: 230/255, blue: 230/255, alpha: 0.7)
+        }
+        
     }
     //アバター設定
     func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
-        //一度読み込んだ画像をローカルにpersistする必要がある。userDefaultsを使うか、またはSDWebImageにその機能が備わっているか。。。
+        
         avatarView.layer.borderWidth = 1.5
         avatarView.layer.borderColor = UIColor.darkGray.cgColor
         
@@ -354,14 +460,18 @@ extension ChatRoomVC: MessagesDisplayDelegate{
                         }
                     }
                 }
+            }else{
+                DispatchQueue.main.async {
+                    avatarView.sd_setImage(with: URL(string: self.friendPictureURL), placeholderImage: UIImage(systemName: "person"))
+                }
             }
         }else{
-            avatarView.image = UIImage(systemName: "")
+            avatarView.image = UIImage(systemName: "globe")
         }
     }
     
+    //.textまたは.attributedTextのメッセージの場合に、もしurlを表す文字列を検知したらTypeを.urlに置き換えてくれる。
     //urlの他に、mapを検知しても良いかも。通常の.textでも.attributedTextでもどちらでも反応し、例えば、messageのコンテンツの文字列が
-    //urlを表す文字列だと検知したらTypeを.urlに置き換えてくれる。
     func enabledDetectors(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> [DetectorType] {
         return [.url]
     }
@@ -372,14 +482,35 @@ extension ChatRoomVC: MessagesDisplayDelegate{
         guard let message = message as? Message else{return}
         
         switch message.kind {
-        case .photo(let photoURL):
-            guard let url = photoURL.url else {return}
+        case .photo(let photoMedia):
+            guard let url = photoMedia.url else {return}
+            imageView.sd_setImage(with: url, completed: nil)
+            
+        case .video(let videoMedia):
+            //Mediaオブジェクトのimage:UIImageのプロパティにサムネイルを入れたかったので、動画の0秒地点の画像で作ったサムネイル画像を
+            //FirebaseStorageに保存し、そのurlをString情報でFireStoreに保存し、メッセージバブル作成時にSDWebKitで表示させる。かなり面倒な事になったが。。
+            guard let media = videoMedia as? Media else{return}
+            let urlString = media.thumbnailURL
+            let url = URL(string: urlString)
             imageView.sd_setImage(with: url, completed: nil)
         default:
             break
         }
     }
     
+    //.urlとディテクトされたメッセージテキストの書式を決める。ここでは青にして下線を加えている。
+    func detectorAttributes(for detector: DetectorType, and message: MessageType, at indexPath: IndexPath) -> [NSAttributedString.Key: Any] {
+        
+        let detectorAttributes: [NSAttributedString.Key: Any] = {
+            [
+                NSAttributedString.Key.foregroundColor: UIColor.link,
+                NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue,
+                NSAttributedString.Key.underlineColor: UIColor.link,
+            ]
+        }()
+        MessageLabel.defaultAttributes = detectorAttributes
+        return MessageLabel.defaultAttributes
+    }
 }
 
 
@@ -388,18 +519,16 @@ extension ChatRoomVC: MessagesDisplayDelegate{
 //MARK: - Layout Delegate
 extension ChatRoomVC: MessagesLayoutDelegate{
     
-    
     //日付が変わった時だけ高さを50にする。そうでない時は高さを0にして見せないように。
     func cellTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGFloat {
         
         if indexPath.section > 1{
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .none
-            dateFormatter.timeZone   = TimeZone(identifier: "Asia/Tokyo")
+            //dateFormatter.timeZone   = TimeZone(identifier: "Asia/Tokyo") //日本時間でテストしたい時にはここをオンに。
             let dateOfThisMessage = dateFormatter.string(from: message.sentDate)
             let lastMessage = messages[indexPath.section - 1]
             let dateOfLastMessage = dateFormatter.string(from: lastMessage.sentDate)
-            print(dateOfThisMessage, dateOfLastMessage)
             if dateOfThisMessage != dateOfLastMessage{
                 return 50
             }
@@ -435,27 +564,56 @@ extension ChatRoomVC: MessageCellDelegate{
         self.messageInputBar.inputTextView.resignFirstResponder()
     }
     
+    func didTapImage(in cell: MessageCollectionViewCell) { //Mediaのメッセージをタップした時に呼ばれるデリゲートメソッドかと。
+        
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
+        
+        let message = messages[indexPath.section]
+        
+        switch message.kind {
+        case .photo(let media):
+            guard let imageUrl = media.url else {return}
+            let vc = PhotoViewerVC(with: imageUrl)
+            navigationController?.pushViewController(vc, animated: true)
+            
+        case .video(let media):
+            guard let videoUrl = media.url else {return}
+            let vc = AVPlayerViewController()
+            vc.player = AVPlayer(url: videoUrl)
+            navigationController?.pushViewController(vc, animated: true)
+        default:
+            break
+        }
+    }
+    func didSelectURL(_ url: URL) {
+        let config = SFSafariViewController.Configuration()
+        let vc = SFSafariViewController(url: url, configuration: config)
+        present(vc, animated: true)
+    }
 }
 
 
 
-//MARK: - InputBarDelegate
+//MARK: - InputBarDelegate  テキストのセーブはここから。この時点でAttributed Textでセーブしていくようにする。
+//オフラインになってしまった時も考慮しないといけないので、必ずちゃんと完成形のMessageオブジェクトをここで作って、
+//それをFireStorageManagerに飛ばしセーブするようにする。送信者は必ず自分なので文字色は白。
+
 extension ChatRoomVC: InputBarAccessoryViewDelegate{
     
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         
         inputBar.inputTextView.text = ""
+        let attributedString = NSAttributedString(string: text,
+                                                attributes: [.font: UIFont.preferredFont(forTextStyle: .title3),.foregroundColor: UIColor(white: 1.0, alpha: 1)])
         
-        let newMessage = Message(sender: sender, messageId: UUID().uuidString, sentDate: Date(), kind: .text(text))
-        messages.append(newMessage)//オフラインになった時も画面上メッセージが送られて対処できるように。
+        let newMessage = Message(sender: sender, messageId: UUID().uuidString, sentDate: Date(), kind: .attributedText(attributedString))
+        messages.append(newMessage) //オフラインになった時も画面上にメッセージが表示されるようにローカルのmessagesにappendし、reloadData()
         self.messagesCollectionView.reloadData()
         self.messagesCollectionView.scrollToBottom(animated: true)
-        Message.saveNewMessageToFireStore(newMessage: newMessage, myUID: myUID, friendUID: friendUID, chatRoomID: chatRoomID) {
+        
+        Message.saveNewMessageToFireStore(newMessage: newMessage, myUID: myUID, friendUID: friendUID, friendName: friendName, chatRoomID: chatRoomID) {
             
-            DispatchQueue.main.async {
-                print("inputBarからのメッセージがFireStoreで保存され、Completion内で今scrollToBottomが実行されるところです。")
-                
-            }
+            self.saveNewMessageNumber()
         }
     }
     

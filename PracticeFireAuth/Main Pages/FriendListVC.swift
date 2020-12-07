@@ -30,8 +30,10 @@ class FriendListVC: UIViewController {
         myUID = uid
         
         view.backgroundColor = .lightGray
-        navigationItem.title = "Friends"
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus.bubble"), style: .done, target: self, action: #selector(searchFriendButtonPressed))
+        navigationController?.navigationBar.prefersLargeTitles = true
+        
+        navigationItem.title = "Friend List"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass"), style: .done, target: self, action: #selector(searchFriendButtonPressed))
         
         tableView.delegate = self
         tableView.dataSource = self
@@ -40,6 +42,11 @@ class FriendListVC: UIViewController {
         setupViews()
         fetchFriends()
      }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        navigationController?.tabBarController?.tabBar.isHidden = false
+    }
     
     private func setupViews(){
         
@@ -98,22 +105,12 @@ class FriendListVC: UIViewController {
         }
     }
     
-    
-    override func viewWillAppear(_ animated: Bool) {
-        print("view2 will Appear")
-    }
-    override func viewWillDisappear(_ animated: Bool) {
-        print("view2 will Disappear")
-    }
-    override func viewDidDisappear(_ animated: Bool) {
-        print("view2 did Disappear")
-    }
 }
 
 
 extension FriendListVC: FriendListCellDelegate{ //チャットルームオープンと、セルを長押しした時の友達消去コマンド
     
-    func PushChatRoom(friendUserObject: User) {
+    func PushChatRoom(friendUserObject: User) { //ここが唯一chatRoomIDが作られる場所。それが保存されるのはchatRoomでsendが押された時。
         
         var chatRoomID = ""
         let friendUID = friendUserObject.authUID
