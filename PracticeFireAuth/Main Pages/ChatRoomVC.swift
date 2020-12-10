@@ -53,6 +53,9 @@ class ChatRoomVC: MessagesViewController{
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messageCellDelegate = self
         messageInputBar.delegate = self
+        
+        maintainPositionOnKeyboardFrameChanged = true
+        
         navigationController?.tabBarController?.tabBar.isHidden = true
         
         setProperties()
@@ -181,10 +184,12 @@ class ChatRoomVC: MessagesViewController{
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
+        print("view will appear")
         //この後に自動のmessagesCollectionView.reloadData()が必ず行われる。
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
+        print("view did appear")
     }
     
     
@@ -405,10 +410,7 @@ extension ChatRoomVC: MessagesDataSource{
         //それをコピペして、自分なりに修正して以下のブロックを書いた。doesRelativeDateFormattingというのがポイントとなるプロパティ。
         //但し、同日の場合、英語ではToday,日本語では今日が連続して表示されるので、うざい。そこら辺を消すための行も付け足した。
         
-        let dateString = Date.getString(date: message.sentDate)
-        let dateStringVer2 = dateString.replacingOccurrences(of: "Today, ", with: "")
-        let dateStringVer3 = dateStringVer2.replacingOccurrences(of: "今日 ", with: "")
-        
+        let dateStringVer3 = Date.getString(date: message.sentDate)
         return NSAttributedString(string: dateStringVer3, attributes: [.font: UIFont.preferredFont(forTextStyle: .caption2), .foregroundColor: UIColor.darkGray])
     }
 }
@@ -610,7 +612,7 @@ extension ChatRoomVC: InputBarAccessoryViewDelegate{
         messages.append(newMessage) //オフラインになった時も画面上にメッセージが表示されるようにローカルのmessagesにappendし、reloadData()
         self.messagesCollectionView.reloadData()
         self.messagesCollectionView.scrollToBottom(animated: true)
-        
+        //self.messageInputBar.inputTextView.resignFirstResponder()
         Message.saveNewMessageToFireStore(newMessage: newMessage, myUID: myUID, friendUID: friendUID, friendName: friendName, chatRoomID: chatRoomID) {
             
             self.saveNewMessageNumber()

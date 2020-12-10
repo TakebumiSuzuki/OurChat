@@ -27,6 +27,9 @@ extension Date{
         default:
             df.dateFormat = "MMM d, yyyy, h:mm a"
         }
-        return df.string(from: date)
+        let dateString = df.string(from: date)
+        let dateStringVer2 = dateString.replacingOccurrences(of: "Today, ", with: "")
+        let dateStringVer3 = dateStringVer2.replacingOccurrences(of: "今日 ", with: "")
+        return dateStringVer3
     }
 }

@@ -13,13 +13,15 @@ import Firebase
 
 class SearchFriendVC: UIViewController{
     
+    private var quoteListener: ListenerRegistration?
+    
     private var foundUsers: [User] = []
     //private var requestingUsers: [User] = []
     
-    private var myFriendListDic = ["" : ""]
+    private var myFriendListDic = ["" : ""]  //viewDidLoadでFireStoreへのアクセスが行われ、友達辞書がここに代入される
     
     private let searchBar: UISearchBar = {
-       let bar = UISearchBar()
+        let bar = UISearchBar()
         bar.placeholder = "search with email or name"
         bar.becomeFirstResponder()
         bar.showsCancelButton = true
@@ -46,24 +48,37 @@ class SearchFriendVC: UIViewController{
         view.backgroundColor = .white
         
         setupViews()
-        fetchMyFriendListDic()
+        fetchMyFriendListDic()  //検索した相手が、すでに自分のフレンドリストに入っているかどうかを調べるために必要
+    }
+    
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(true)
+        
+        if let quoteListener = self.quoteListener{
+            quoteListener.remove()
+            print("リスナ-removed")
+        }
     }
     
     private func setupViews(){
         view.addSubview(tableView)
-        tableView.frame = view.bounds
+        
+        tableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
     }
     
-    private func fetchMyFriendListDic(){
+    private func fetchMyFriendListDic(){ //このリストはviewDiDLoadで実行され、ユーザーが検索をかけた時のdequeueの際に、各cellに渡される。
         
-        let uid = Auth.auth().currentUser?.uid
-        guard let myUID = uid else{return}
-        Firestore.firestore().collection("friendLists").document(myUID).getDocument { [weak self] (snapshot, error) in
-            
+        guard let myUID = Auth.auth().currentUser?.uid else{return}
+        quoteListener = Firestore.firestore().collection("friendLists").document(myUID).addSnapshotListener { [weak self] (snapshot, error) in
+            print("dictionary updated")
             guard let self = self else{return}
             if error != nil{print("自分のfriend listドキュメント取得に失敗しました"); return}
-            guard let snapshot = snapshot else{return}
-            guard let dictionary = snapshot.data() as? [String : String] else{return}
+            guard let snapshot = snapshot, let dictionary = snapshot.data() as? [String : String] else{return}
+            
             self.myFriendListDic = dictionary
         }
     }
@@ -84,6 +99,7 @@ class SearchFriendVC: UIViewController{
                 guard let snapshot = snapshot else{return}
                 let resultDocs = snapshot.documents
                 self.foundUsers.removeAll()
+                
                 for singleDocument in resultDocs{
                     dispatchGroup.enter()
                     let friendUID = singleDocument.documentID //data()とやる代わりにこうするとパス名を取得できる
@@ -91,7 +107,7 @@ class SearchFriendVC: UIViewController{
                         dispatchGroup.leave()
                         continue   //これがないと、このまま下に処理が続いていってdispatchGroup.leave()が重複されてエラーになってしまうよう。
                     }
-                    
+                    print("searchBegin")
                     User.createUserObjectFromUID(authUID: friendUID) { (result) in
                         switch result{
                         case .success(let userObject):
@@ -180,7 +196,7 @@ extension SearchFriendVC: UITableViewDelegate, UITableViewDataSource{
 }
 
 
-//MARK: - Cell Delegate 友達追加ボタンを押されたき
+//MARK: - Cell Delegate 友達追加ボタンが押された時 Cellの方からDelegateでトリガーされる。
 extension SearchFriendVC: SearchFriendCellDelegate{  //友達を追加する
     
     func showAddingFriendAlert(friendUID: String, friendName: String, completion: @escaping() -> Void) {
@@ -188,9 +204,14 @@ extension SearchFriendVC: SearchFriendCellDelegate{  //友達を追加する
         let alert1 = UIAlertAction(title: "Ok", style: .default) { [weak self](alert) in
             
             guard let self = self else {return}
-            guard let myUID = Auth.auth().currentUser?.uid else{print("自分のUIDの取得に失敗しました");return}
+            guard let myUID = Auth.auth().currentUser?.uid else{return}
             
-            self.saveFriendInfoToFireStore(friendUID: friendUID, friendName: friendName, myUID: myUID) {
+            FireStoreManager.saveFriendInfoToFireStore(friendUID: friendUID, friendName: friendName, myUID: myUID) {
+                guard let text = self.searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty else {return}
+                
+                self.searchBegin(query: text)
+                
+                ServiceAlert.showSimpleAlert(vc: self, title: "\(friendName) is your friend now!" , message: "Successfully added to your Friend List.")
                 completion()
             }
         }
@@ -200,15 +221,23 @@ extension SearchFriendVC: SearchFriendCellDelegate{  //友達を追加する
         ServiceAlert.showMultipleSelectionAlert(vc: self, title: "Adding \(friendName) to your friend.", message: "ok?", actions: [alert1, alert2])
     }
     
+    
+    
     func showUnfriendAlert(friendUID: String, friendName: String, completion: @escaping() -> Void){
         
         let alert1 = UIAlertAction(title: "Ok", style: .default) { [weak self](alert) in
             
             guard let self = self else {return}
-            guard let myUID = Auth.auth().currentUser?.uid else{print("自分のUIDの取得に失敗しました");return}
+            guard let myUID = Auth.auth().currentUser?.uid else{return}
             
-            self.deleteFriendInfofromFireStore(friendUID: friendUID, friendName: friendName, myUID: myUID) {
+            FireStoreManager.deleteFriendInfofromFireStore(friendUID: friendUID, friendName: friendName, myUID: myUID) {
+                guard let text = self.searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty else {return}
+                
+                self.searchBegin(query: text)
+                
+                ServiceAlert.showSimpleAlert(vc: self, title: "Unfriended with \(friendName)" , message: "Not friend anymore")
                 completion()
+                
             }
         }
         
@@ -216,50 +245,9 @@ extension SearchFriendVC: SearchFriendCellDelegate{  //友達を追加する
         
         ServiceAlert.showMultipleSelectionAlert(vc: self, title: "You are unfriending with \(friendName).", message: "Are you sure?", actions: [alert1, alert2])
     }
-        
-        
-        
-        
     
     
     
-    
-    private func saveFriendInfoToFireStore(friendUID: String, friendName: String, myUID: String, completion: @escaping() -> Void) {
-        
-        let dispatchGroup = DispatchGroup()
-        dispatchGroup.enter()
-        
-        Firestore.firestore().collection("friendLists").document(friendUID).setData([myUID : "confirmed"], merge: true )
-        Firestore.firestore().collection("friendLists").document(myUID).setData([friendUID : "confirmed"], merge: true)
-        dispatchGroup.leave()
-        
-        dispatchGroup.notify(queue: .main) {
-            //self.dismiss(animated: true, completion: nil)
-            ServiceAlert.showSimpleAlert(vc: self.presentingViewController!, title: "\(friendName) is your friend now!" , message: "Successfully added to your Friend List.")
-            completion()
-        }
-    }
-    
-    private func deleteFriendInfofromFireStore(friendUID: String, friendName: String, myUID: String, completion: @escaping() -> Void){
-        
-        let dispatchGroup = DispatchGroup()
-        dispatchGroup.enter()
-        
-        Firestore.firestore().collection("friendLists").document(friendUID).updateData([myUID : FieldValue.delete()]) { (error) in
-            if error != nil{print("FireStore内の友達のドキュメント内の、自分UIDフィールドの消去に失敗しました。"); return}
-        }
-        Firestore.firestore().collection("friendLists").document(myUID).updateData([friendUID : FieldValue.delete()]) { (error) in
-            if error != nil{print("FireStore内の自分のフレンドドキュメント内の、FirendUIDフィールド消去に失敗しました。"); return}
-        }
-        dispatchGroup.leave()
-        
-        dispatchGroup.notify(queue: .main) {
-            //self.dismiss(animated: true, completion: nil)
-            ServiceAlert.showSimpleAlert(vc: self.presentingViewController!, title: "Unfriended with \(friendName)" , message: "Not friend anymore")
-            completion()
-        }
-        
-    }
     
 }
 

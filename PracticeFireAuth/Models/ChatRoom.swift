@@ -18,9 +18,9 @@ struct ChatRoom{
     var numberOfNewMessages: Int = 0
     var chatRoomID: String
     
-    var myUID: String = "" //これだけはFireStoreからの情報ではなく、インスタンス化時に現在ログインしているクライアントユーザーのUIDを入れる。
     
-    init(dic: [String : Any]){
+    init(dic: [String : Any]){    //FirestoreからのdictionaryからChatRoomオブジェクトを作る
+        
         self.members = dic["members"] as? [String] ?? [String]()
         self.latestMessageTime = dic["latestMessageTime"] as? Timestamp ?? Timestamp()
         self.latestMessageText = dic["latestMessageText"] as? String ?? ""

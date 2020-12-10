@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import FirebaseStorage
+import Firebase
 
 class FireStorageManager{
     
@@ -96,6 +96,10 @@ class FireStorageManager{
             }
         }
     }
+    
+    
+    
+    
     
     
 }

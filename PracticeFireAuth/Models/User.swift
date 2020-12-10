@@ -15,6 +15,7 @@ struct User{
     let email: String
     let displayName: String
     let pictureURL: String?
+    let status: String?
     
     let firstName: String?
     let lastName: String?
@@ -29,6 +30,7 @@ struct User{
         self.email = dic["email"] as! String
         self.displayName = dic["displayName"] as! String
         self.pictureURL = pictureURL
+        self.status = dic["status"] as? String ?? ""
         
         self.firstName = dic["firstName"] as? String
         self.lastName = dic["lastName"] as? String
@@ -36,7 +38,7 @@ struct User{
     }
     
     
-    
+    //statusプロパティは含まれていないが、SettingVCからのみ保存するのでこちらにはなくて問題ない。mergeなので。
     static func saveUserToFireStore(authUID: String, email: String, displayName: String, pictureURL: String?, firstName: String?, lastName: String?, createdAt: Timestamp, completion: @escaping (Error?)->Void){
         
         let dictionaryToSave = ["email": email, "displayName": displayName, "pictureURL": pictureURL as Any, "firstName": firstName as Any, "lastName": lastName as Any, "createdAt": createdAt] as [String: Any]
@@ -69,11 +71,4 @@ struct User{
             completion(.success(user))
         }
     }
-    
-    
-    static func uploadPictureToFireStorage(){
-        
-        
-    }
-    
 }

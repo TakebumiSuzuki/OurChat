@@ -5,6 +5,7 @@
 //  Created by TAKEBUMI SUZUKI on 11/28/20.
 //  Copyright © 2020 TAKEBUMI SUZUKI. All rights reserved.
 //
+//cellの高さは80,プロフィール写真の直径は50
 
 import UIKit
 import Firebase
@@ -12,15 +13,14 @@ import SDWebImage
 
 class ConversationListCell: UITableViewCell {
     
-    var chatRoomObject: ChatRoom?{
+    var chatRoomObject: ChatRoom?{  //これはdequeueの直後に代入される。
         didSet{
-            setOtherInfo()
+            setTimeAndMessage()
             setFriendPictureAndName()
         }
     }
     
-    
-    private let imagePicture: UIImageView = {
+    private let imagePicture: UIImageView = {  //デフォルトのプロフィール写真が必要
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.backgroundColor = .white
@@ -36,7 +36,7 @@ class ConversationListCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .white
-        label.font = .systemFont(ofSize: 17, weight: .semibold)
+        label.font = .systemFont(ofSize: 18, weight: .semibold)
         return label
     }()
     
@@ -60,7 +60,7 @@ class ConversationListCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .white
-        label.font = .systemFont(ofSize: 13, weight: .thin)
+        label.font = .systemFont(ofSize: 13, weight: .regular)
         return label
     }()
     
@@ -68,7 +68,7 @@ class ConversationListCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .white
-        label.backgroundColor = .red
+        label.backgroundColor = .systemPink
         label.clipsToBounds = true
         label.layer.cornerRadius = 11
         label.textAlignment = .center
@@ -84,66 +84,6 @@ class ConversationListCell: UITableViewCell {
         self.backgroundColor = .clear
         self.contentView.backgroundColor = .clear
         setupViews()
-    }
-    
-    private func setOtherInfo(){
-        
-        guard let chatRoomObject = chatRoomObject else{return}
-        
-        messageTextLabel.text = chatRoomObject.latestMessageText
-        let date = chatRoomObject.latestMessageTime.dateValue()
-        timeLabel.text = Date.getString(date: date)
-    }
-    
-    
-    private func setFriendPictureAndName(){
-        
-        guard let chatRoomObject = chatRoomObject else{return}
-        chatRoomObject.members.forEach { (memberUID) in
-            if memberUID != chatRoomObject.myUID{ //myUIDはFireStoreからの情報ではなく、インスタンス化時に現在ログインしているクライアントユーザーのUIDを入れている。
-                let friendUID = memberUID
-                
-                Firestore.firestore().collection("users").document(friendUID).getDocument { [weak self](snapshot, error) in
-                    
-                    guard let self = self else{return}
-                    if error != nil{print("Firestoreから友達データを取得するのに失敗しました"); return}
-                    guard let snapshot = snapshot, let dictionary = snapshot.data(),
-                        let friendName = dictionary["displayName"] as? String,
-                        let friendPictureURL = dictionary["pictureURL"] as? String else{return}
-                        
-                    DispatchQueue.main.async {
-                        self.imagePicture.sd_setImage(with: URL(string: friendPictureURL), placeholderImage: nil)
-                        self.nameLabel.text = friendName
-                    }
-                }
-                
-                let chatRoomID = chatRoomObject.chatRoomID
-                Firestore.firestore().collection("chatRooms").document(chatRoomID).getDocument { [weak self](snapshot, error) in
-                    
-                    guard let self = self else{return}
-                    if error != nil{print("chatRoom情報を取得するのに失敗しました"); return}
-                    
-                    guard let snapshot = snapshot, let dictionary = snapshot.data(),
-                        let numberOfNewMessages = dictionary["numberOfNewMessages"] as? Int,
-                        let latestMessageSenderUID = dictionary["latestMessageSenderUID"] as? String else{return}
-                        
-                    if latestMessageSenderUID == friendUID{
-                        DispatchQueue.main.async {
-                            self.newMessageNumberLabel.isHidden = numberOfNewMessages > 0 ? false : true
-                            self.newMessageNumberLabel.text = String(numberOfNewMessages)
-                            self.inOutSignView.image = UIImage(systemName: "arrow.down.left")
-                            self.inOutSignView.tintColor = .red
-                        }
-                    }
-                    if latestMessageSenderUID == chatRoomObject.myUID{
-                        DispatchQueue.main.async{
-                            self.inOutSignView.image = UIImage(systemName: "arrow.up.right")
-                            self.inOutSignView.tintColor = .green
-                        }
-                    }
-               }
-            }
-        }
     }
     
     private func setupViews(){
@@ -171,7 +111,7 @@ class ConversationListCell: UITableViewCell {
         
         messageTextLabel.topAnchor.constraint(equalTo: inOutSignView.topAnchor).isActive = true
         messageTextLabel.leadingAnchor.constraint(equalTo: inOutSignView.trailingAnchor, constant: 8).isActive = true
-        messageTextLabel.widthAnchor.constraint(equalToConstant: self.frame.width - 100).isActive = true
+        messageTextLabel.widthAnchor.constraint(equalToConstant: self.frame.width - 90).isActive = true
         
         timeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -17).isActive = true
         timeLabel.bottomAnchor.constraint(equalTo: nameLabel.bottomAnchor).isActive = true
@@ -183,6 +123,69 @@ class ConversationListCell: UITableViewCell {
     }
     
     
+    private func setTimeAndMessage(){
+        
+        guard let chatRoomObject = chatRoomObject else{return}
+        
+        messageTextLabel.text = chatRoomObject.latestMessageText
+        let date = chatRoomObject.latestMessageTime.dateValue()
+        timeLabel.text = Date.getString(date: date)
+    }
+    
+    
+    private func setFriendPictureAndName(){
+        
+        guard let chatRoomObject = chatRoomObject, let myUID = Auth.auth().currentUser?.uid else{return}
+        
+        chatRoomObject.members.forEach { (memberUID) in
+            
+            if memberUID != myUID{
+                let friendUID = memberUID
+                
+                //友達の写真と名前をゲット
+                Firestore.firestore().collection("users").document(friendUID).getDocument { [weak self](snapshot, error) in
+                    
+                    guard let self = self else{return}
+                    if error != nil{print("Firestoreから友達データを取得するのに失敗しました"); return}
+                    guard let snapshot = snapshot, let dictionary = snapshot.data(),
+                        let friendName = dictionary["displayName"] as? String,
+                        let friendPictureURL = dictionary["pictureURL"] as? String else{return}
+                        
+                    DispatchQueue.main.async {
+                        self.imagePicture.sd_setImage(with: URL(string: friendPictureURL), placeholderImage: nil)
+                        self.nameLabel.text = friendName
+                    }
+                }
+                
+                //新着メッセージの数合わせ
+                let chatRoomID = chatRoomObject.chatRoomID
+                Firestore.firestore().collection("chatRooms").document(chatRoomID).getDocument { [weak self](snapshot, error) in
+                    
+                    guard let self = self else{return}
+                    if error != nil{print("chatRoom情報を取得するのに失敗しました"); return}
+                    
+                    guard let snapshot = snapshot, let dictionary = snapshot.data(),
+                        let numberOfNewMessages = dictionary["numberOfNewMessages"] as? Int,
+                        let latestMessageSenderUID = dictionary["latestMessageSenderUID"] as? String else{return}
+                        
+                    if latestMessageSenderUID == friendUID{
+                        DispatchQueue.main.async {
+                            self.newMessageNumberLabel.isHidden = numberOfNewMessages > 0 ? false : true
+                            self.newMessageNumberLabel.text = String(numberOfNewMessages)
+                            self.inOutSignView.image = UIImage(systemName: "arrow.down.left")
+                            self.inOutSignView.tintColor = .systemPink
+                        }
+                    }
+                    if latestMessageSenderUID == myUID{
+                        DispatchQueue.main.async{
+                            self.inOutSignView.image = UIImage(systemName: "arrow.up.right")
+                            self.inOutSignView.tintColor = .green
+                        }
+                    }
+               }
+            }
+        }
+    }
     
     
     override func setSelected(_ selected: Bool, animated: Bool) {
