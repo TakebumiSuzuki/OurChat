@@ -13,11 +13,21 @@
 		0C202289256876630039E76D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C202288256876630039E76D /* User.swift */; };
 		0C3228EA2572C79B00C7CBEF /* FriendListVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3228E92572C79B00C7CBEF /* FriendListVC.swift */; };
 		0C3AABF625778DF200E5F131 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3AABF525778DF200E5F131 /* Message.swift */; };
+		0C45C3DC257E6B5C007493FB /* MyCustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C45C3DB257E6B5C007493FB /* MyCustomButton.swift */; };
+		0C45C3E02580323D007493FB /* FireStoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C45C3DF2580323D007493FB /* FireStoreManager.swift */; };
 		0C5A8DA22575060900DB2EE1 /* SearchFriendCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5A8DA12575060900DB2EE1 /* SearchFriendCell.swift */; };
+		0C6B6F6A25F1D558007CB892 /* UIView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F6925F1D558007CB892 /* UIView+Extension.swift */; };
+		0C6B6F6E25F20F4F007CB892 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F6D25F20F4F007CB892 /* CustomTextField.swift */; };
+		0C6B6F7225F21A92007CB892 /* CustomLoginButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7125F21A92007CB892 /* CustomLoginButton.swift */; };
+		0C6B6F7725F22B62007CB892 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7625F22B62007CB892 /* AuthenticationManager.swift */; };
+		0C6B6F7D25F28F30007CB892 /* ValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7C25F28F30007CB892 /* ValidationService.swift */; };
 		0C7D727B25744CE20072D866 /* FriendListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7D727A25744CE20072D866 /* FriendListCell.swift */; };
 		0C7D727D2574CDCB0072D866 /* SearchFriendVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7D727C2574CDCB0072D866 /* SearchFriendVC.swift */; };
 		0C7EF2E32577181500418BDB /* ChatRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7EF2E22577181500418BDB /* ChatRoom.swift */; };
 		0C90FC99256984A100A8BBD5 /* FireStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C90FC98256984A100A8BBD5 /* FireStorageManager.swift */; };
+		0CC98E1C257C06F200D9B050 /* PhotoViewerVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC98E1B257C06F200D9B050 /* PhotoViewerVC.swift */; };
+		0CC98E20257C2C4000D9B050 /* Date+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC98E1F257C2C4000D9B050 /* Date+Extension.swift */; };
+		0CC98E24257C3A0100D9B050 /* MySubclassedTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC98E23257C3A0100D9B050 /* MySubclassedTabBarController.swift */; };
 		0CDABCE22567050A00DDD5DA /* ServiceAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CDABCE12567050A00DDD5DA /* ServiceAlert.swift */; };
 		0CE1329D25655A8700B666A7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE1329C25655A8700B666A7 /* AppDelegate.swift */; };
 		0CE1329F25655A8700B666A7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE1329E25655A8700B666A7 /* SceneDelegate.swift */; };
@@ -38,11 +48,21 @@
 		0C202288256876630039E76D /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		0C3228E92572C79B00C7CBEF /* FriendListVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendListVC.swift; sourceTree = "<group>"; };
 		0C3AABF525778DF200E5F131 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		0C45C3DB257E6B5C007493FB /* MyCustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCustomButton.swift; sourceTree = "<group>"; };
+		0C45C3DF2580323D007493FB /* FireStoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FireStoreManager.swift; sourceTree = "<group>"; };
 		0C5A8DA12575060900DB2EE1 /* SearchFriendCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFriendCell.swift; sourceTree = "<group>"; };
+		0C6B6F6925F1D558007CB892 /* UIView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Extension.swift"; sourceTree = "<group>"; };
+		0C6B6F6D25F20F4F007CB892 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
+		0C6B6F7125F21A92007CB892 /* CustomLoginButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLoginButton.swift; sourceTree = "<group>"; };
+		0C6B6F7625F22B62007CB892 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
+		0C6B6F7C25F28F30007CB892 /* ValidationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationService.swift; sourceTree = "<group>"; };
 		0C7D727A25744CE20072D866 /* FriendListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendListCell.swift; sourceTree = "<group>"; };
 		0C7D727C2574CDCB0072D866 /* SearchFriendVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFriendVC.swift; sourceTree = "<group>"; };
 		0C7EF2E22577181500418BDB /* ChatRoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRoom.swift; sourceTree = "<group>"; };
 		0C90FC98256984A100A8BBD5 /* FireStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FireStorageManager.swift; sourceTree = "<group>"; };
+		0CC98E1B257C06F200D9B050 /* PhotoViewerVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViewerVC.swift; sourceTree = "<group>"; };
+		0CC98E1F257C2C4000D9B050 /* Date+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extension.swift"; sourceTree = "<group>"; };
+		0CC98E23257C3A0100D9B050 /* MySubclassedTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MySubclassedTabBarController.swift; sourceTree = "<group>"; };
 		0CDABCE12567050A00DDD5DA /* ServiceAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceAlert.swift; sourceTree = "<group>"; };
 		0CE1329925655A8700B666A7 /* PracticeFireAuth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PracticeFireAuth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0CE1329C25655A8700B666A7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -77,6 +97,7 @@
 			children = (
 				0CE132B4256563ED00B666A7 /* LoginVC.swift */,
 				0CE132B6256563FC00B666A7 /* SignUpVC.swift */,
+				0C6B6F7C25F28F30007CB892 /* ValidationService.swift */,
 			);
 			path = "Login & SignUp";
 			sourceTree = "<group>";
@@ -91,6 +112,7 @@
 				0C7D727C2574CDCB0072D866 /* SearchFriendVC.swift */,
 				0C5A8DA12575060900DB2EE1 /* SearchFriendCell.swift */,
 				0C0F0FAF257182570051D7CB /* ChatRoomVC.swift */,
+				0CC98E1B257C06F200D9B050 /* PhotoViewerVC.swift */,
 				0CE132B225655BED00B666A7 /* SettingVC.swift */,
 			);
 			path = "Main Pages";
@@ -104,6 +126,16 @@
 				0C3AABF525778DF200E5F131 /* Message.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		0C6B6F7525F22B3B007CB892 /* APIs */ = {
+			isa = PBXGroup;
+			children = (
+				0C6B6F7625F22B62007CB892 /* AuthenticationManager.swift */,
+				0C45C3DF2580323D007493FB /* FireStoreManager.swift */,
+				0C90FC98256984A100A8BBD5 /* FireStorageManager.swift */,
+			);
+			name = APIs;
 			sourceTree = "<group>";
 		};
 		0CE1329025655A8700B666A7 = {
@@ -130,14 +162,20 @@
 				0CE132B82565665D00B666A7 /* GoogleService-Info.plist */,
 				0CE1329C25655A8700B666A7 /* AppDelegate.swift */,
 				0CE1329E25655A8700B666A7 /* SceneDelegate.swift */,
-				0C90FC98256984A100A8BBD5 /* FireStorageManager.swift */,
+				0CC98E23257C3A0100D9B050 /* MySubclassedTabBarController.swift */,
 				0C0F0FB12571B6A90051D7CB /* Models */,
 				0C0F0FAE257182100051D7CB /* Main Pages */,
 				0C0F0FAD257181EA0051D7CB /* Login & SignUp */,
+				0C6B6F7525F22B3B007CB892 /* APIs */,
 				0CE132A525655A8900B666A7 /* Assets.xcassets */,
 				0CE132A725655A8900B666A7 /* LaunchScreen.storyboard */,
 				0CE132AA25655A8900B666A7 /* Info.plist */,
+				0C45C3DB257E6B5C007493FB /* MyCustomButton.swift */,
+				0C6B6F6D25F20F4F007CB892 /* CustomTextField.swift */,
+				0C6B6F7125F21A92007CB892 /* CustomLoginButton.swift */,
 				0C1E383025667420005CA891 /* String+Extension.swift */,
+				0CC98E1F257C2C4000D9B050 /* Date+Extension.swift */,
+				0C6B6F6925F1D558007CB892 /* UIView+Extension.swift */,
 				0CDABCE12567050A00DDD5DA /* ServiceAlert.swift */,
 			);
 			path = PracticeFireAuth;
@@ -172,6 +210,7 @@
 				0CE1329625655A8700B666A7 /* Frameworks */,
 				0CE1329725655A8700B666A7 /* Resources */,
 				EA1BB0873267E2DF93A63BA2 /* [CP] Embed Pods Frameworks */,
+				81817662F2C42C9176E4AAE2 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -229,6 +268,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		81817662F2C42C9176E4AAE2 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PracticeFireAuth/Pods-PracticeFireAuth-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PracticeFireAuth/Pods-PracticeFireAuth-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PracticeFireAuth/Pods-PracticeFireAuth-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		DF2285B49A5CD26242C165EA /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -280,16 +336,26 @@
 				0CE132B125655BDD00B666A7 /* ConversationListVC.swift in Sources */,
 				0C3AABF625778DF200E5F131 /* Message.swift in Sources */,
 				0CE1329D25655A8700B666A7 /* AppDelegate.swift in Sources */,
+				0C45C3DC257E6B5C007493FB /* MyCustomButton.swift in Sources */,
+				0CC98E20257C2C4000D9B050 /* Date+Extension.swift in Sources */,
 				0CE1329F25655A8700B666A7 /* SceneDelegate.swift in Sources */,
+				0C6B6F7725F22B62007CB892 /* AuthenticationManager.swift in Sources */,
 				0C7D727B25744CE20072D866 /* FriendListCell.swift in Sources */,
+				0C6B6F7D25F28F30007CB892 /* ValidationService.swift in Sources */,
+				0C6B6F6E25F20F4F007CB892 /* CustomTextField.swift in Sources */,
 				0C7D727D2574CDCB0072D866 /* SearchFriendVC.swift in Sources */,
 				0C3228EA2572C79B00C7CBEF /* FriendListVC.swift in Sources */,
+				0CC98E1C257C06F200D9B050 /* PhotoViewerVC.swift in Sources */,
+				0C6B6F6A25F1D558007CB892 /* UIView+Extension.swift in Sources */,
 				0C202289256876630039E76D /* User.swift in Sources */,
+				0C6B6F7225F21A92007CB892 /* CustomLoginButton.swift in Sources */,
 				0CE132B7256563FC00B666A7 /* SignUpVC.swift in Sources */,
 				0C90FC99256984A100A8BBD5 /* FireStorageManager.swift in Sources */,
 				0C0F0FB32571B7D00051D7CB /* ConversationListCell.swift in Sources */,
 				0C7EF2E32577181500418BDB /* ChatRoom.swift in Sources */,
 				0CDABCE22567050A00DDD5DA /* ServiceAlert.swift in Sources */,
+				0CC98E24257C3A0100D9B050 /* MySubclassedTabBarController.swift in Sources */,
+				0C45C3E02580323D007493FB /* FireStoreManager.swift in Sources */,
 				0C0F0FB0257182570051D7CB /* ChatRoomVC.swift in Sources */,
 				0CE132B5256563ED00B666A7 /* LoginVC.swift in Sources */,
 				0C5A8DA22575060900DB2EE1 /* SearchFriendCell.swift in Sources */,

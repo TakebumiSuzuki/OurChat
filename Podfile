@@ -16,6 +16,7 @@ pod 'FBSDKLoginKit'
 pod 'MessageKit'
 pod 'SDWebImage'
 
+pod 'GoogleSignIn'
 
 
 

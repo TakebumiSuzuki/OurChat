@@ -77,7 +77,7 @@ class ConversationListVC: UIViewController {
     
     private func presentLoginVC(){
         
-        let loginVC = LoginVC()
+        let loginVC = LoginVC(authApi: AuthenticationManager())
         let nav = UINavigationController(rootViewController: loginVC)
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true, completion: nil)

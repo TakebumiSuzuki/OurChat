@@ -557,6 +557,7 @@ class SettingVC: UIViewController {
             }
             
             FBSDKLoginKit.LoginManager().logOut()
+            
         }
         
         let action2 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
