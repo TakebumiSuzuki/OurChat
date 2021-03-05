@@ -6,7 +6,7 @@ target 'PracticeFireAuth' do
   use_frameworks!
 
   # Pods for PracticeFireAuth
-
+pod 'Firebase'
 pod 'Firebase/Auth'
 pod 'Firebase/Firestore'
 pod 'Firebase/Storage'
@@ -18,6 +18,9 @@ pod 'SDWebImage'
 
 pod 'GoogleSignIn'
 
-
+target  'PracticeFireAuthTests' do
+        inherit! :search_paths
+        pod 'Firebase'
+    end
 
 end

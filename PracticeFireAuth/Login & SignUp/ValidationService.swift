@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum ValidationError: String, Error {
+enum ValidationError: String, Equatable, Error {
     case displayNameLessThan3 = "displayName needs to have more than 3 charactors."
     case emailIsNotValid = "email is not in valid format."
     case passwordLessThan6 = "password needs to have more than 6 charactors."

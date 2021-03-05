@@ -3,4 +3,22 @@
    uuid = "F93404D5-9093-4EF7-8C2B-CDC400173A32"
    type = "0"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "01DF2E64-DD9C-4A67-8A09-D457FAB22C25"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PracticeFireAuthTests/ValidationTests.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "41"
+            endingLineNumber = "41"
+            landmarkName = "test_displayName&#x3068;email&#x306b;whiteSpace&#x304c;&#x5165;&#x3063;&#x3066;&#x3044;&#x308b;&#x304c;&#x5165;&#x529b;&#x5024;&#x306f;&#x6b63;&#x3057;&#x3044;&#x6642;()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

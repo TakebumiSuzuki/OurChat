@@ -21,6 +21,7 @@
 		0C6B6F7225F21A92007CB892 /* CustomLoginButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7125F21A92007CB892 /* CustomLoginButton.swift */; };
 		0C6B6F7725F22B62007CB892 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7625F22B62007CB892 /* AuthenticationManager.swift */; };
 		0C6B6F7D25F28F30007CB892 /* ValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7C25F28F30007CB892 /* ValidationService.swift */; };
+		0C6B6FBD25F2A3B3007CB892 /* ValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6FBC25F2A3B3007CB892 /* ValidationTests.swift */; };
 		0C7D727B25744CE20072D866 /* FriendListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7D727A25744CE20072D866 /* FriendListCell.swift */; };
 		0C7D727D2574CDCB0072D866 /* SearchFriendVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7D727C2574CDCB0072D866 /* SearchFriendVC.swift */; };
 		0C7EF2E32577181500418BDB /* ChatRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7EF2E22577181500418BDB /* ChatRoom.swift */; };
@@ -39,7 +40,18 @@
 		0CE132B7256563FC00B666A7 /* SignUpVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE132B6256563FC00B666A7 /* SignUpVC.swift */; };
 		0CE132B92565665D00B666A7 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0CE132B82565665D00B666A7 /* GoogleService-Info.plist */; };
 		5DE9E796E04D49111390BE0D /* Pods_PracticeFireAuth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C524C9B39899F31135903BF /* Pods_PracticeFireAuth.framework */; };
+		E8E1538BEA03471D319E6FC9 /* Pods_PracticeFireAuthTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57C1E01859C83E39CF42F241 /* Pods_PracticeFireAuthTests.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0C6B6F8B25F29C6C007CB892 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0CE1329125655A8700B666A7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0CE1329825655A8700B666A7;
+			remoteInfo = PracticeFireAuth;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0C0F0FAF257182570051D7CB /* ChatRoomVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRoomVC.swift; sourceTree = "<group>"; };
@@ -56,6 +68,9 @@
 		0C6B6F7125F21A92007CB892 /* CustomLoginButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLoginButton.swift; sourceTree = "<group>"; };
 		0C6B6F7625F22B62007CB892 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
 		0C6B6F7C25F28F30007CB892 /* ValidationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationService.swift; sourceTree = "<group>"; };
+		0C6B6F8625F29C6C007CB892 /* PracticeFireAuthTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PracticeFireAuthTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0C6B6F8A25F29C6C007CB892 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0C6B6FBC25F2A3B3007CB892 /* ValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationTests.swift; sourceTree = "<group>"; };
 		0C7D727A25744CE20072D866 /* FriendListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendListCell.swift; sourceTree = "<group>"; };
 		0C7D727C2574CDCB0072D866 /* SearchFriendVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFriendVC.swift; sourceTree = "<group>"; };
 		0C7EF2E22577181500418BDB /* ChatRoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRoom.swift; sourceTree = "<group>"; };
@@ -75,12 +90,23 @@
 		0CE132B4256563ED00B666A7 /* LoginVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginVC.swift; sourceTree = "<group>"; };
 		0CE132B6256563FC00B666A7 /* SignUpVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpVC.swift; sourceTree = "<group>"; };
 		0CE132B82565665D00B666A7 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
+		57C1E01859C83E39CF42F241 /* Pods_PracticeFireAuthTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PracticeFireAuthTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C524C9B39899F31135903BF /* Pods_PracticeFireAuth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PracticeFireAuth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D519B0A7251FD49D02BDF6E /* Pods-PracticeFireAuthTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PracticeFireAuthTests.debug.xcconfig"; path = "Target Support Files/Pods-PracticeFireAuthTests/Pods-PracticeFireAuthTests.debug.xcconfig"; sourceTree = "<group>"; };
 		BBC6C4E8A22D4F7996A87265 /* Pods-PracticeFireAuth.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PracticeFireAuth.release.xcconfig"; path = "Target Support Files/Pods-PracticeFireAuth/Pods-PracticeFireAuth.release.xcconfig"; sourceTree = "<group>"; };
 		D90E8768CC6DD2D6ED850F32 /* Pods-PracticeFireAuth.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PracticeFireAuth.debug.xcconfig"; path = "Target Support Files/Pods-PracticeFireAuth/Pods-PracticeFireAuth.debug.xcconfig"; sourceTree = "<group>"; };
+		FDD82A920BAF0A3EE49172F1 /* Pods-PracticeFireAuthTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PracticeFireAuthTests.release.xcconfig"; path = "Target Support Files/Pods-PracticeFireAuthTests/Pods-PracticeFireAuthTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0C6B6F8325F29C6C007CB892 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E8E1538BEA03471D319E6FC9 /* Pods_PracticeFireAuthTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0CE1329625655A8700B666A7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -138,10 +164,20 @@
 			name = APIs;
 			sourceTree = "<group>";
 		};
+		0C6B6F8725F29C6C007CB892 /* PracticeFireAuthTests */ = {
+			isa = PBXGroup;
+			children = (
+				0C6B6FBC25F2A3B3007CB892 /* ValidationTests.swift */,
+				0C6B6F8A25F29C6C007CB892 /* Info.plist */,
+			);
+			path = PracticeFireAuthTests;
+			sourceTree = "<group>";
+		};
 		0CE1329025655A8700B666A7 = {
 			isa = PBXGroup;
 			children = (
 				0CE1329B25655A8700B666A7 /* PracticeFireAuth */,
+				0C6B6F8725F29C6C007CB892 /* PracticeFireAuthTests */,
 				0CE1329A25655A8700B666A7 /* Products */,
 				7A96F4105747C0A8A6ACC0F7 /* Pods */,
 				2533D123685179EFB9C1F1B7 /* Frameworks */,
@@ -152,6 +188,7 @@
 			isa = PBXGroup;
 			children = (
 				0CE1329925655A8700B666A7 /* PracticeFireAuth.app */,
+				0C6B6F8625F29C6C007CB892 /* PracticeFireAuthTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -185,6 +222,7 @@
 			isa = PBXGroup;
 			children = (
 				6C524C9B39899F31135903BF /* Pods_PracticeFireAuth.framework */,
+				57C1E01859C83E39CF42F241 /* Pods_PracticeFireAuthTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -194,6 +232,8 @@
 			children = (
 				D90E8768CC6DD2D6ED850F32 /* Pods-PracticeFireAuth.debug.xcconfig */,
 				BBC6C4E8A22D4F7996A87265 /* Pods-PracticeFireAuth.release.xcconfig */,
+				8D519B0A7251FD49D02BDF6E /* Pods-PracticeFireAuthTests.debug.xcconfig */,
+				FDD82A920BAF0A3EE49172F1 /* Pods-PracticeFireAuthTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -201,6 +241,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0C6B6F8525F29C6C007CB892 /* PracticeFireAuthTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0C6B6F8F25F29C6C007CB892 /* Build configuration list for PBXNativeTarget "PracticeFireAuthTests" */;
+			buildPhases = (
+				31A0F8FAC5BD155B11E64C43 /* [CP] Check Pods Manifest.lock */,
+				0C6B6F8225F29C6C007CB892 /* Sources */,
+				0C6B6F8325F29C6C007CB892 /* Frameworks */,
+				0C6B6F8425F29C6C007CB892 /* Resources */,
+				215DA7F73C838491A9E98EAC /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0C6B6F8C25F29C6C007CB892 /* PBXTargetDependency */,
+			);
+			name = PracticeFireAuthTests;
+			productName = PracticeFireAuthTests;
+			productReference = 0C6B6F8625F29C6C007CB892 /* PracticeFireAuthTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		0CE1329825655A8700B666A7 /* PracticeFireAuth */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0CE132AD25655A8900B666A7 /* Build configuration list for PBXNativeTarget "PracticeFireAuth" */;
@@ -227,10 +287,14 @@
 		0CE1329125655A8700B666A7 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1130;
+				LastSwiftUpdateCheck = 1230;
 				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "TAKEBUMI SUZUKI";
 				TargetAttributes = {
+					0C6B6F8525F29C6C007CB892 = {
+						CreatedOnToolsVersion = 12.3;
+						TestTargetID = 0CE1329825655A8700B666A7;
+					};
 					0CE1329825655A8700B666A7 = {
 						CreatedOnToolsVersion = 11.3.1;
 					};
@@ -250,11 +314,19 @@
 			projectRoot = "";
 			targets = (
 				0CE1329825655A8700B666A7 /* PracticeFireAuth */,
+				0C6B6F8525F29C6C007CB892 /* PracticeFireAuthTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0C6B6F8425F29C6C007CB892 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0CE1329725655A8700B666A7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -268,6 +340,45 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		215DA7F73C838491A9E98EAC /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PracticeFireAuthTests/Pods-PracticeFireAuthTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PracticeFireAuthTests/Pods-PracticeFireAuthTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PracticeFireAuthTests/Pods-PracticeFireAuthTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		31A0F8FAC5BD155B11E64C43 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PracticeFireAuthTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		81817662F2C42C9176E4AAE2 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -327,6 +438,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0C6B6F8225F29C6C007CB892 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0C6B6FBD25F2A3B3007CB892 /* ValidationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0CE1329525655A8700B666A7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -364,6 +483,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		0C6B6F8C25F29C6C007CB892 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0CE1329825655A8700B666A7 /* PracticeFireAuth */;
+			targetProxy = 0C6B6F8B25F29C6C007CB892 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		0CE132A725655A8900B666A7 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
@@ -376,6 +503,52 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0C6B6F8D25F29C6C007CB892 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8D519B0A7251FD49D02BDF6E /* Pods-PracticeFireAuthTests.debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KTQR7K9373;
+				INFOPLIST_FILE = PracticeFireAuthTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.djtake.PracticeFireAuthTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PracticeFireAuth.app/PracticeFireAuth";
+			};
+			name = Debug;
+		};
+		0C6B6F8E25F29C6C007CB892 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FDD82A920BAF0A3EE49172F1 /* Pods-PracticeFireAuthTests.release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KTQR7K9373;
+				INFOPLIST_FILE = PracticeFireAuthTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.djtake.PracticeFireAuthTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PracticeFireAuth.app/PracticeFireAuth";
+			};
+			name = Release;
+		};
 		0CE132AB25655A8900B666A7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -531,6 +704,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0C6B6F8F25F29C6C007CB892 /* Build configuration list for PBXNativeTarget "PracticeFireAuthTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0C6B6F8D25F29C6C007CB892 /* Debug */,
+				0C6B6F8E25F29C6C007CB892 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		0CE1329425655A8700B666A7 /* Build configuration list for PBXProject "PracticeFireAuth" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
