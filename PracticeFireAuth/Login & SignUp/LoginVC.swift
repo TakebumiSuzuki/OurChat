@@ -10,8 +10,13 @@ import UIKit
 import Firebase
 import FBSDKLoginKit
 import GoogleSignIn
+import RxSwift
+import RxCocoa
 
 class LoginVC: UIViewController {
+    
+    let loginViewModel = LoginViewModel()
+    let disposeBag = DisposeBag()
     
     var authApi: AuthenticationManager!
     
@@ -100,8 +105,19 @@ class LoginVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupBindings()
         setupViews()
         setupNotifications()
+    }
+    
+    func setupBindings(){
+        emailTextField.rx.text.map{ $0 ?? "" }.bind(to: loginViewModel.emailPublishSubject)
+            .disposed(by: disposeBag)
+        passwordTextField.rx.text.map{ $0 ?? "" }.bind(to: loginViewModel.passwordPublishSubject)
+            .disposed(by: disposeBag)
+        
+        loginViewModel.isValid().bind(to: loginButton.rx.isEnabled).disposed(by: disposeBag)
+        loginViewModel.isValid().map { $0 ? 0.9 : 0.3 }.bind(to: loginButton.rx.alpha).disposed(by: disposeBag)
     }
     
     override func viewDidLayoutSubviews() {
@@ -155,7 +171,7 @@ class LoginVC: UIViewController {
         
         clearView.fillSuperview()
         
-        darkView.anchor(left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, paddingLeft: 15, paddingBottom: 30, paddingRight: 15, height: 350)
+        darkView.anchor(left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, paddingLeft: 15, paddingBottom: 50, paddingRight: 15, height: 350)
         
         fbLoginButton.anchor(top: darkView.topAnchor, left: clearView.leftAnchor, bottom: darkView.topAnchor, right: clearView.rightAnchor, paddingTop: 30, paddingLeft: 50, paddingBottom: -70, paddingRight: 50)
         

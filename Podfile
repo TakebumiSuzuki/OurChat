@@ -18,6 +18,9 @@ pod 'SDWebImage'
 
 pod 'GoogleSignIn'
 
+pod 'RxSwift'
+pod 'RxCocoa'
+
 target  'PracticeFireAuthTests' do
         inherit! :search_paths
         pod 'Firebase'

@@ -20,8 +20,14 @@
 		0C6B6F6E25F20F4F007CB892 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F6D25F20F4F007CB892 /* CustomTextField.swift */; };
 		0C6B6F7225F21A92007CB892 /* CustomLoginButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7125F21A92007CB892 /* CustomLoginButton.swift */; };
 		0C6B6F7725F22B62007CB892 /* AuthenticationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7625F22B62007CB892 /* AuthenticationManager.swift */; };
-		0C6B6F7D25F28F30007CB892 /* ValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6F7C25F28F30007CB892 /* ValidationService.swift */; };
 		0C6B6FBD25F2A3B3007CB892 /* ValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B6FBC25F2A3B3007CB892 /* ValidationTests.swift */; };
+		0C6B701225F35CCB007CB892 /* SignUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B701125F35CCB007CB892 /* SignUpViewModel.swift */; };
+		0C6B701825F35D7B007CB892 /* ValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B701725F35D7B007CB892 /* ValidationService.swift */; };
+		0C6B701E25F38074007CB892 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B701D25F38074007CB892 /* LoginViewModel.swift */; };
+		0C6B706C25F40B01007CB892 /* AccountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B706B25F40B01007CB892 /* AccountTextField.swift */; };
+		0C6B707025F40CF8007CB892 /* AccountUILabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B706F25F40CF8007CB892 /* AccountUILabel.swift */; };
+		0C6B707625F40E37007CB892 /* AccountLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B707525F40E37007CB892 /* AccountLine.swift */; };
+		0C6B707A25F40EB2007CB892 /* AccountButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6B707925F40EB2007CB892 /* AccountButton.swift */; };
 		0C7D727B25744CE20072D866 /* FriendListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7D727A25744CE20072D866 /* FriendListCell.swift */; };
 		0C7D727D2574CDCB0072D866 /* SearchFriendVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7D727C2574CDCB0072D866 /* SearchFriendVC.swift */; };
 		0C7EF2E32577181500418BDB /* ChatRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7EF2E22577181500418BDB /* ChatRoom.swift */; };
@@ -67,10 +73,16 @@
 		0C6B6F6D25F20F4F007CB892 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
 		0C6B6F7125F21A92007CB892 /* CustomLoginButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLoginButton.swift; sourceTree = "<group>"; };
 		0C6B6F7625F22B62007CB892 /* AuthenticationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationManager.swift; sourceTree = "<group>"; };
-		0C6B6F7C25F28F30007CB892 /* ValidationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationService.swift; sourceTree = "<group>"; };
 		0C6B6F8625F29C6C007CB892 /* PracticeFireAuthTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PracticeFireAuthTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C6B6F8A25F29C6C007CB892 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0C6B6FBC25F2A3B3007CB892 /* ValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationTests.swift; sourceTree = "<group>"; };
+		0C6B701125F35CCB007CB892 /* SignUpViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewModel.swift; sourceTree = "<group>"; };
+		0C6B701725F35D7B007CB892 /* ValidationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValidationService.swift; sourceTree = "<group>"; };
+		0C6B701D25F38074007CB892 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
+		0C6B706B25F40B01007CB892 /* AccountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTextField.swift; sourceTree = "<group>"; };
+		0C6B706F25F40CF8007CB892 /* AccountUILabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountUILabel.swift; sourceTree = "<group>"; };
+		0C6B707525F40E37007CB892 /* AccountLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLine.swift; sourceTree = "<group>"; };
+		0C6B707925F40EB2007CB892 /* AccountButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountButton.swift; sourceTree = "<group>"; };
 		0C7D727A25744CE20072D866 /* FriendListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendListCell.swift; sourceTree = "<group>"; };
 		0C7D727C2574CDCB0072D866 /* SearchFriendVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFriendVC.swift; sourceTree = "<group>"; };
 		0C7EF2E22577181500418BDB /* ChatRoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRoom.swift; sourceTree = "<group>"; };
@@ -122,8 +134,9 @@
 			isa = PBXGroup;
 			children = (
 				0CE132B4256563ED00B666A7 /* LoginVC.swift */,
+				0C6B701D25F38074007CB892 /* LoginViewModel.swift */,
 				0CE132B6256563FC00B666A7 /* SignUpVC.swift */,
-				0C6B6F7C25F28F30007CB892 /* ValidationService.swift */,
+				0C6B701125F35CCB007CB892 /* SignUpViewModel.swift */,
 			);
 			path = "Login & SignUp";
 			sourceTree = "<group>";
@@ -140,6 +153,10 @@
 				0C0F0FAF257182570051D7CB /* ChatRoomVC.swift */,
 				0CC98E1B257C06F200D9B050 /* PhotoViewerVC.swift */,
 				0CE132B225655BED00B666A7 /* SettingVC.swift */,
+				0C6B706B25F40B01007CB892 /* AccountTextField.swift */,
+				0C6B707925F40EB2007CB892 /* AccountButton.swift */,
+				0C6B706F25F40CF8007CB892 /* AccountUILabel.swift */,
+				0C6B707525F40E37007CB892 /* AccountLine.swift */,
 			);
 			path = "Main Pages";
 			sourceTree = "<group>";
@@ -207,6 +224,7 @@
 				0CE132A525655A8900B666A7 /* Assets.xcassets */,
 				0CE132A725655A8900B666A7 /* LaunchScreen.storyboard */,
 				0CE132AA25655A8900B666A7 /* Info.plist */,
+				0C6B701725F35D7B007CB892 /* ValidationService.swift */,
 				0C45C3DB257E6B5C007493FB /* MyCustomButton.swift */,
 				0C6B6F6D25F20F4F007CB892 /* CustomTextField.swift */,
 				0C6B6F7125F21A92007CB892 /* CustomLoginButton.swift */,
@@ -454,13 +472,16 @@
 				0CE132B325655BED00B666A7 /* SettingVC.swift in Sources */,
 				0CE132B125655BDD00B666A7 /* ConversationListVC.swift in Sources */,
 				0C3AABF625778DF200E5F131 /* Message.swift in Sources */,
+				0C6B707625F40E37007CB892 /* AccountLine.swift in Sources */,
 				0CE1329D25655A8700B666A7 /* AppDelegate.swift in Sources */,
 				0C45C3DC257E6B5C007493FB /* MyCustomButton.swift in Sources */,
 				0CC98E20257C2C4000D9B050 /* Date+Extension.swift in Sources */,
 				0CE1329F25655A8700B666A7 /* SceneDelegate.swift in Sources */,
+				0C6B707A25F40EB2007CB892 /* AccountButton.swift in Sources */,
+				0C6B701E25F38074007CB892 /* LoginViewModel.swift in Sources */,
 				0C6B6F7725F22B62007CB892 /* AuthenticationManager.swift in Sources */,
 				0C7D727B25744CE20072D866 /* FriendListCell.swift in Sources */,
-				0C6B6F7D25F28F30007CB892 /* ValidationService.swift in Sources */,
+				0C6B706C25F40B01007CB892 /* AccountTextField.swift in Sources */,
 				0C6B6F6E25F20F4F007CB892 /* CustomTextField.swift in Sources */,
 				0C7D727D2574CDCB0072D866 /* SearchFriendVC.swift in Sources */,
 				0C3228EA2572C79B00C7CBEF /* FriendListVC.swift in Sources */,
@@ -471,10 +492,13 @@
 				0CE132B7256563FC00B666A7 /* SignUpVC.swift in Sources */,
 				0C90FC99256984A100A8BBD5 /* FireStorageManager.swift in Sources */,
 				0C0F0FB32571B7D00051D7CB /* ConversationListCell.swift in Sources */,
+				0C6B701225F35CCB007CB892 /* SignUpViewModel.swift in Sources */,
 				0C7EF2E32577181500418BDB /* ChatRoom.swift in Sources */,
 				0CDABCE22567050A00DDD5DA /* ServiceAlert.swift in Sources */,
 				0CC98E24257C3A0100D9B050 /* MySubclassedTabBarController.swift in Sources */,
+				0C6B707025F40CF8007CB892 /* AccountUILabel.swift in Sources */,
 				0C45C3E02580323D007493FB /* FireStoreManager.swift in Sources */,
+				0C6B701825F35D7B007CB892 /* ValidationService.swift in Sources */,
 				0C0F0FB0257182570051D7CB /* ChatRoomVC.swift in Sources */,
 				0CE132B5256563ED00B666A7 /* LoginVC.swift in Sources */,
 				0C5A8DA22575060900DB2EE1 /* SearchFriendCell.swift in Sources */,

@@ -8,8 +8,14 @@
 
 import UIKit
 import Firebase
+import RxSwift
+import RxCocoa
 
 class SignUpVC: UIViewController {
+    
+    let signUpViewModel = SignUpViewModel()
+    let disposeBag = DisposeBag()
+    
     
     var authApi: AuthenticationManager!
     var validationService: ValidationService!
@@ -90,8 +96,21 @@ class SignUpVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupBindings()
         setupViews()
         setupNotifications()
+    }
+    
+    func setupBindings(){
+        displayNameField.rx.text.map{ $0 ?? ""}.bind(to: signUpViewModel.displayNamePublishSubject)
+            .disposed(by: disposeBag)
+        emailTextField.rx.text.map{ $0 ?? ""}.bind(to: signUpViewModel.emailPublishSubject)
+            .disposed(by: disposeBag)
+        passwordTextField.rx.text.map{ $0 ?? ""}.bind(to: signUpViewModel.passwordPublishSubject)
+            .disposed(by: disposeBag)
+        
+        signUpViewModel.isValid().bind(to: registerButton.rx.isEnabled).disposed(by: disposeBag)
+        signUpViewModel.isValid().map { $0 ? 0.9 : 0.3 }.bind(to: registerButton.rx.alpha).disposed(by: disposeBag)
     }
     
     private func setupViews(){
@@ -141,7 +160,7 @@ class SignUpVC: UIViewController {
         
         clearView.fillSuperview()
         
-        darkView.anchor(left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, paddingLeft: 15, paddingBottom: 30, paddingRight: 15, height: 380)
+        darkView.anchor(left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, paddingLeft: 15, paddingBottom: 50, paddingRight: 15, height: 380)
         
         profileImageView.anchor(top: darkView.topAnchor,paddingTop: 20, width: 120, height: 120)
         profileImageView.centerX(inView: view)
@@ -161,8 +180,11 @@ class SignUpVC: UIViewController {
         let keyboardFrame = (notification.userInfo![UIResponder.keyboardFrameEndUserInfoKey] as AnyObject).cgRectValue
         guard let keyboardMinY = keyboardFrame?.minY else {return}
         
-        let registerButtonMaxY = registerButton.frame.maxY
-        if registerButtonMaxY < keyboardMinY{
+        let registerButtonMaxY = registerButton.frame.maxY  //.frameはsuperView(この場合darkViewに対しての位置になるので次行が必要)
+        let darkViewMinY = darkView.frame.minY
+        let registerButtonMaxYPosition = registerButtonMaxY + darkViewMinY
+        
+        if registerButtonMaxYPosition > keyboardMinY{
             let distance = registerButtonMaxY - keyboardMinY + 20
             self.clearView.bounds.origin.y = -distance
         }

@@ -54,16 +54,22 @@ class SettingVC: UIViewController {
     private var newProfilePicture: UIImage?
     private var actualEditDone: Bool = false
     
+    private let bgImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.image = UIImage(named: "gradation")
+        iv.contentMode = .scaleAspectFill
+        return iv
+    }()
+    
     private let profileImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(systemName: "person")
+        imageView.image = UIImage(systemName: "plus")
         imageView.layer.cornerRadius = 60
-        imageView.layer.borderColor = UIColor.darkGray.cgColor
+        imageView.layer.borderColor = UIColor.white.cgColor
         imageView.layer.borderWidth = 1.5
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.tintColor = .lightGray
+        imageView.tintColor = .white
         return imageView
     }()
     
@@ -90,123 +96,66 @@ class SettingVC: UIViewController {
         return button
     }()
     
-    private let displayNameLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Display Name:"
-        label.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+    private let displayNameLabel: AccountUILabel = {
+        let label = AccountUILabel()
+        label.text = "Display Name :"
         return label
     }()
     
-    private let displayNameField: MyTextField = {
-        let field = MyTextField()
-        field.translatesAutoresizingMaskIntoConstraints = false
+    private let displayNameField: AccountTextField = {
+        let field = AccountTextField()
         field.isUserInteractionEnabled = false
-        field.layer.cornerRadius = 11
-        field.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        field.text = "DisplayName here"
-        field.textColor = .gray
         return field
     }()
     
-    private let emailLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "email:"
-        label.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+    private let emailLabel: AccountUILabel = {
+        let label = AccountUILabel()
+        label.text = "Email :"
         return label
     }()
-    private let emailField: MyTextField = {
-        let field = MyTextField()
-        field.translatesAutoresizingMaskIntoConstraints = false
+    private let emailField: AccountTextField = {
+        let field = AccountTextField()
         field.isUserInteractionEnabled = false
-        field.layer.cornerRadius = 11
-        field.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        field.text = "abcdef@gmail.com"
-        field.textColor = .gray
         return field
     }()
     
-    private let statusLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Your status:"
-        label.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+    private let statusLabel: AccountUILabel = {
+        let label = AccountUILabel()
+        label.text = "Your Current Mood :"
         return label
     }()
     
-    private let numberOfCharactorsLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
+    private let numberOfCharactorsLabel: AccountUILabel = {
+        let label = AccountUILabel()
         label.text = "(25/25)"
-        label.font = UIFont.systemFont(ofSize: 15, weight: .regular)
-        label.textColor = .lightGray
         return label
     }()
     
-    private let statusField: MyTextField = {
-        let field = MyTextField()
-        field.translatesAutoresizingMaskIntoConstraints = false
+    private let statusField: AccountTextField = {
+        let field = AccountTextField()
         field.isUserInteractionEnabled = false
-        field.text = "Im"
-        field.layer.cornerRadius = 11
-        field.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         field.placeholder = "less than 25 charactors"
-        field.textColor = .gray
+        field.attributedPlaceholder = NSAttributedString(string: "less than 25 charactors",
+                                                         attributes: [.foregroundColor : UIColor.white])
         return field
     }()
     
-    private lazy var cancelButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        
+    private lazy var cancelButton: AccountButton = {
+        let button = AccountButton(type: .system)
         button.setTitle("Cancel", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.isEnabled = false
-        button.backgroundColor = .lightGray
-        button.layer.cornerRadius = 10
-        button.clipsToBounds = true
         button.addTarget(self, action: #selector(cancelButtonPressed), for: .touchUpInside)
         return button
     }()
-    
-    
-    private lazy var saveButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        
+    private lazy var saveButton: AccountButton = {
+        let button = AccountButton(type: .system)
         button.setTitle("Save", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.isEnabled = false
-        button.backgroundColor = .lightGray
-        button.layer.cornerRadius = 10
-        button.clipsToBounds = true
         button.addTarget(self, action: #selector(saveButtonPressed), for: .touchUpInside)
         return button
     }()
     
-    private var line1: UIView = {
-        let line = UIView()
-        line.translatesAutoresizingMaskIntoConstraints = false
-        line.layer.borderColor = UIColor.darkGray.cgColor
-        line.layer.borderWidth = 1
-        return line
-    }()
-    private var line2: UIView = {
-        let line = UIView()
-        line.translatesAutoresizingMaskIntoConstraints = false
-        line.layer.borderColor = UIColor.darkGray.cgColor
-        line.layer.borderWidth = 1
-        return line
-    }()
-    private var line3: UIView = {
-        let line = UIView()
-        line.translatesAutoresizingMaskIntoConstraints = false
-        line.layer.borderColor = UIColor.darkGray.cgColor
-        line.layer.borderWidth = 1
-        return line
-    }()
-    
+    private let line1 = AccountLine()
+    private let line2 = AccountLine()
+    private let line3 = AccountLine()
     
     
     override func viewDidLoad() {
@@ -214,18 +163,28 @@ class SettingVC: UIViewController {
         
         guard let safeUID = Auth.auth().currentUser?.uid else{return}
         self.myUID = safeUID
-        navigationController?.navigationBar.prefersLargeTitles = true
-        view.backgroundColor = .white
-        title = "Account"
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Log out", style: .plain, target: self, action: #selector(logOutButtonPressed))
         
+        setupViews()
+        fetchDataFromFirebase()
+        setupNotification()
+    }
+    
+    func setupViews(){
         displayNameField.delegate = self
         emailField.delegate = self
         statusField.delegate = self
         
-        fetchDataFromFirebase()
-        setupViews()
-        setupNotification()
+        title = "Account"
+        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.prefersLargeTitles = true
+        let barButtonItem = UIBarButtonItem(title: "Log Out", style: .plain, target: self, action: #selector(logOutButtonPressed))
+        barButtonItem.tintColor = .white
+        navigationItem.rightBarButtonItem = barButtonItem
+    }
+    
+    
+    override func viewDidLayoutSubviews() {
+        setupConstraints()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -235,6 +194,8 @@ class SettingVC: UIViewController {
             print("リスナ-removed")
         }
     }
+    
+    
     
     private func fetchDataFromFirebase(){
         
@@ -256,7 +217,6 @@ class SettingVC: UIViewController {
     }
     
     private func setupNotification() {
-        
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
@@ -295,8 +255,8 @@ class SettingVC: UIViewController {
         view.endEditing(true)
     }
     
-    private func setupViews(){
-        
+    private func setupConstraints(){
+        view.addSubview(bgImageView)
         view.addSubview(profileImageView)
         view.addSubview(lockButton)
         view.addSubview(changePictureButton)
@@ -313,10 +273,10 @@ class SettingVC: UIViewController {
         view.addSubview(line2)
         view.addSubview(line3)
         
-        profileImageView.topAnchor.constraint(equalTo: view.topAnchor, constant: 150).isActive = true
-        profileImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 120).isActive = true
-        profileImageView.widthAnchor.constraint(equalTo: profileImageView.heightAnchor).isActive = true
+        bgImageView.fillSuperview()
+        
+        profileImageView.anchor(top: view.topAnchor, paddingTop: 180, width: 120, height: 120)
+        profileImageView.centerX(inView: view)
         
         lockButton.topAnchor.constraint(equalTo: profileImageView.topAnchor, constant: -20).isActive = true
         lockButton.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 20).isActive = true
@@ -328,55 +288,34 @@ class SettingVC: UIViewController {
         changePictureButton.widthAnchor.constraint(equalToConstant: 90).isActive = true
         changePictureButton.heightAnchor.constraint(equalToConstant: 25).isActive = true
         
-        displayNameLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 20).isActive = true
-        displayNameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30).isActive = true
-        displayNameLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30).isActive = true
         
-        displayNameField.topAnchor.constraint(equalTo: displayNameLabel.bottomAnchor, constant: 7).isActive = true
-        displayNameField.leadingAnchor.constraint(equalTo: displayNameLabel.leadingAnchor).isActive = true
-        displayNameField.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
+        displayNameLabel.anchor(top: profileImageView.bottomAnchor, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 30, paddingLeft: 30, paddingRight: 30)
         
-        line1.topAnchor.constraint(equalTo: displayNameField.bottomAnchor, constant: 1).isActive = true
-        line1.leadingAnchor.constraint(equalTo: displayNameLabel.leadingAnchor).isActive = true
-        line1.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
-        line1.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        displayNameField.anchor(top: displayNameLabel.bottomAnchor, left: displayNameLabel.leftAnchor, right: displayNameLabel.rightAnchor, paddingTop: 7)
         
-        emailLabel.topAnchor.constraint(equalTo: displayNameField.bottomAnchor, constant: 20).isActive = true
-        emailLabel.leadingAnchor.constraint(equalTo: displayNameLabel.leadingAnchor).isActive = true
-        emailLabel.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
+        line1.anchor(top: displayNameField.bottomAnchor, left: displayNameLabel.leftAnchor, right: displayNameLabel.rightAnchor, height: 1)
         
-        emailField.topAnchor.constraint(equalTo: emailLabel.bottomAnchor, constant: 7).isActive = true
-        emailField.leadingAnchor.constraint(equalTo: displayNameLabel.leadingAnchor).isActive = true
-        emailField.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
         
-        line2.topAnchor.constraint(equalTo: emailField.bottomAnchor, constant: 1).isActive = true
-        line2.leadingAnchor.constraint(equalTo: displayNameLabel.leadingAnchor).isActive = true
-        line2.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
-        line2.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        emailLabel.anchor(top: line1.bottomAnchor, left: displayNameLabel.leftAnchor, right: displayNameLabel.rightAnchor, paddingTop: 20)
         
-        statusLabel.topAnchor.constraint(equalTo: emailField.bottomAnchor, constant: 20).isActive = true
-        statusLabel.leadingAnchor.constraint(equalTo: displayNameLabel.leadingAnchor).isActive = true
-        statusLabel.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
+        emailField.anchor(top: emailLabel.bottomAnchor, left: displayNameLabel.leftAnchor, right: displayNameLabel.rightAnchor, paddingTop: 7)
+        
+        line2.anchor(top: emailField.bottomAnchor, left: displayNameLabel.leftAnchor, right: displayNameLabel.rightAnchor, height: 1)
+        
+        
+        statusLabel.anchor(top: line2.bottomAnchor, left: displayNameLabel.leftAnchor, right: displayNameLabel.rightAnchor, paddingTop: 20)
+        
+        statusField.anchor(top: statusLabel.bottomAnchor, left: displayNameLabel.leftAnchor, right: displayNameLabel.rightAnchor, paddingTop: 7)
+        
+        line3.anchor(top: statusField.bottomAnchor, left: displayNameLabel.leftAnchor, right: displayNameLabel.rightAnchor, height: 1)
         
         numberOfCharactorsLabel.firstBaselineAnchor.constraint(equalTo: statusLabel.firstBaselineAnchor).isActive = true
-        numberOfCharactorsLabel.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
+        numberOfCharactorsLabel.anchor(right: displayNameLabel.rightAnchor)
         
-        statusField.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 7).isActive = true
-        statusField.leadingAnchor.constraint(equalTo: displayNameLabel.leadingAnchor).isActive = true
-        statusField.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
-        
-        line3.topAnchor.constraint(equalTo: statusField.bottomAnchor, constant: 1).isActive = true
-        line3.leadingAnchor.constraint(equalTo: displayNameLabel.leadingAnchor).isActive = true
-        line3.trailingAnchor.constraint(equalTo: displayNameLabel.trailingAnchor).isActive = true
-        line3.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        
-        cancelButton.topAnchor.constraint(equalTo: statusField.bottomAnchor, constant: 30).isActive = true
-        cancelButton.trailingAnchor.constraint(equalTo: view.centerXAnchor, constant: -10).isActive = true
+        cancelButton.anchor(top: statusField.bottomAnchor, right: view.centerXAnchor, paddingTop: 30, paddingRight: 10,  height: 32)
         cancelButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.20).isActive = true
-        cancelButton.heightAnchor.constraint(equalToConstant: 32).isActive = true
         
-        saveButton.topAnchor.constraint(equalTo: cancelButton.topAnchor).isActive = true
-        saveButton.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 10).isActive = true
+        saveButton.anchor(top: cancelButton.topAnchor, left: view.centerXAnchor, paddingLeft: 10)
         saveButton.widthAnchor.constraint(equalTo: cancelButton.widthAnchor).isActive = true
         saveButton.heightAnchor.constraint(equalTo: cancelButton.heightAnchor).isActive = true
     }
@@ -527,13 +466,13 @@ class SettingVC: UIViewController {
         
         displayNameField.isUserInteractionEnabled = false
         displayNameField.text = displayName
-        displayNameField.textColor = .lightGray
+        displayNameField.textColor = .white
         emailField.isUserInteractionEnabled = false
         emailField.text = email
-        emailField.textColor = .lightGray
+        emailField.textColor = .white
         statusField.isUserInteractionEnabled = false
         statusField.text = status
-        statusField.textColor = .lightGray
+        statusField.textColor = .white
         statusField.placeholder = "less than 25 charactors"
         guard let url = URL(string: pictureURL) else{return}
         profileImageView.sd_setImage(with: url, placeholderImage: nil, completed: nil)
@@ -630,22 +569,5 @@ extension SettingVC: UIImagePickerControllerDelegate, UINavigationControllerDele
             dismiss(animated: true, completion: nil)
             
         }
-    }
-}
-
-class MyTextField: UITextField {
-    
-    let padding = UIEdgeInsets(top: 5, left: 9, bottom: 0, right: 9)
-    
-    override open func textRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.inset(by: padding)
-    }
-    
-    override open func placeholderRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.inset(by: padding)
-    }
-    
-    override open func editingRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.inset(by: padding)
     }
 }
