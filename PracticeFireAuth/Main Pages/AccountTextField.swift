@@ -30,6 +30,9 @@ class AccountTextField: UITextField{
         layer.cornerRadius = 11
         font = UIFont.systemFont(ofSize: 18, weight: .regular)
         textColor = .white
+        tintColor = .white
+        autocapitalizationType = .none
+        autocorrectionType = .no
     }
     
     required init?(coder: NSCoder) {

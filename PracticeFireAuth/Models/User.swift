@@ -12,10 +12,10 @@ import Firebase
 struct User{
     
     let authUID: String
-    let email: String
-    let displayName: String
-    let pictureURL: String?
-    let status: String?
+    var email: String
+    var displayName: String
+    var pictureURL: String?
+    var status: String?
     
     let firstName: String?
     let lastName: String?

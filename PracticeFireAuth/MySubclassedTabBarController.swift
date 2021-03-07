@@ -9,12 +9,16 @@
 
 
 import UIKit
+import Firebase
 
 class MySubclassedTabBarController: UITabBarController {
-
+    
     override func viewDidLoad() {
-      super.viewDidLoad()
-      delegate = self
+        super.viewDidLoad()
+        delegate = self
+        
+        
+        
     }
 }
 

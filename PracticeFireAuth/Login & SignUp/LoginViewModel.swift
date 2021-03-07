@@ -23,6 +23,5 @@ class LoginViewModel{
             .map{ email, password in
                 return email.count > 2 && password.count > 5
             }.startWith(false)
-        
     }
 }

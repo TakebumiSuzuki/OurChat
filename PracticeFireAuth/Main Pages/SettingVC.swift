@@ -9,17 +9,26 @@
 import UIKit
 import FirebaseAuth
 import FBSDKLoginKit
-
 import UIKit
 import Firebase
 import SDWebImage
-
+import RxSwift
+import RxCocoa
 
 class SettingVC: UIViewController {
     
-    private var quoteListener: ListenerRegistration?
+    private var myUser: User!
     
-    private var myUID = ""
+    private var viewModel: SettingViewModel!
+    private let disposeBag = DisposeBag()
+    init(viewModel: SettingViewModel, myUserObject: User) {
+        super.init(nibName: nil, bundle: nil)
+        self.viewModel = viewModel
+        self.myUser = myUserObject
+    }
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private var pictureURL = ""{
         didSet{
@@ -28,30 +37,12 @@ class SettingVC: UIViewController {
         }
     }
     
-    private var displayName = ""{
-        didSet{
-            displayNameField.text = displayName
-        }
-    }
-    private var email = ""{
-        didSet{
-            emailField.text = email
-        }
-    }
-    private var status = ""{
-        didSet{
-            statusField.text = status
-        }
-    }
-    
-    private var activeTextField : UITextField?
-    private var textCount: Int = 0{
-        didSet{
-            numberOfCharactorsLabel.text = "\(25 - textCount)/25"
-        }
-    }
     private var newProfilePictureSelected: Bool = false
     private var newProfilePicture: UIImage?
+    
+    
+    private var textCount: Int = 0
+
     private var actualEditDone: Bool = false
     
     private let bgImageView: UIImageView = {
@@ -60,54 +51,29 @@ class SettingVC: UIViewController {
         iv.contentMode = .scaleAspectFill
         return iv
     }()
-    
-    private let profileImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "plus")
-        imageView.layer.cornerRadius = 60
-        imageView.layer.borderColor = UIColor.white.cgColor
-        imageView.layer.borderWidth = 1.5
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.tintColor = .white
-        return imageView
+    private lazy var profileImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.image = UIImage(systemName: "plus")
+        iv.layer.cornerRadius = 60
+        iv.layer.borderColor = UIColor.white.cgColor
+        iv.layer.borderWidth = 1
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.tintColor = .white
+        iv.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(profilePictureTapped))
+        iv.addGestureRecognizer(tapGesture)
+        return iv
     }()
-    
-    private lazy var lockButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 34, weight: .light, scale: .default)
-        button.setImage(UIImage(systemName: "lock", withConfiguration: symbolConfig), for: .normal)
-        button.tintColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
-        button.addTarget(self, action: #selector(lockButtonPressed), for: .touchUpInside)
-        return button
-    }()
-    
-    private let changePictureButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.isHidden = true
-        button.setTitle("Change Pic", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .light)
-        button.layer.cornerRadius = 10
-        button.clipsToBounds = true
-        button.backgroundColor = #colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1).withAlphaComponent(0.6)
-        button.addTarget(self, action: #selector(changePictureButtonPressed), for: .touchUpInside)
-        return button
-    }()
-    
     private let displayNameLabel: AccountUILabel = {
         let label = AccountUILabel()
         label.text = "Display Name :"
         return label
     }()
-    
     private let displayNameField: AccountTextField = {
         let field = AccountTextField()
-        field.isUserInteractionEnabled = false
         return field
     }()
-    
     private let emailLabel: AccountUILabel = {
         let label = AccountUILabel()
         label.text = "Email :"
@@ -115,41 +81,35 @@ class SettingVC: UIViewController {
     }()
     private let emailField: AccountTextField = {
         let field = AccountTextField()
-        field.isUserInteractionEnabled = false
         return field
     }()
-    
     private let statusLabel: AccountUILabel = {
         let label = AccountUILabel()
         label.text = "Your Current Mood :"
         return label
     }()
-    
     private let numberOfCharactorsLabel: AccountUILabel = {
         let label = AccountUILabel()
-        label.text = "(25/25)"
+//        label.text = "(25/25)"
         return label
     }()
-    
     private let statusField: AccountTextField = {
         let field = AccountTextField()
-        field.isUserInteractionEnabled = false
-        field.placeholder = "less than 25 charactors"
-        field.attributedPlaceholder = NSAttributedString(string: "less than 25 charactors",
-                                                         attributes: [.foregroundColor : UIColor.white])
         return field
     }()
-    
-    private lazy var cancelButton: AccountButton = {
+    private lazy var editCancelButton: AccountButton = {
         let button = AccountButton(type: .system)
         button.setTitle("Cancel", for: .normal)
         button.addTarget(self, action: #selector(cancelButtonPressed), for: .touchUpInside)
         return button
     }()
+    
+    
     private lazy var saveButton: AccountButton = {
         let button = AccountButton(type: .system)
         button.setTitle("Save", for: .normal)
         button.addTarget(self, action: #selector(saveButtonPressed), for: .touchUpInside)
+        button.isEnabled = false
         return button
     }()
     
@@ -161,59 +121,55 @@ class SettingVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        guard let safeUID = Auth.auth().currentUser?.uid else{return}
-        self.myUID = safeUID
-        
+//        guard let safeUID = Auth.auth().currentUser?.uid else{return}
+//        self.myUID = safeUID
+        setupBindings()
         setupViews()
-        fetchDataFromFirebase()
         setupNotification()
     }
-    
-    func setupViews(){
-        displayNameField.delegate = self
-        emailField.delegate = self
-        statusField.delegate = self
-        
-        title = "Account"
-        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        navigationController?.navigationBar.prefersLargeTitles = true
-        let barButtonItem = UIBarButtonItem(title: "Log Out", style: .plain, target: self, action: #selector(logOutButtonPressed))
-        barButtonItem.tintColor = .white
-        navigationItem.rightBarButtonItem = barButtonItem
-    }
-    
     
     override func viewDidLayoutSubviews() {
         setupConstraints()
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(true)
-        if let quoteListener = self.quoteListener{
-            quoteListener.remove()
-            print("リスナ-removed")
-        }
+    private func setupBindings(){
+        
+        displayNameField.rx.text.map{ $0 ?? "" }.bind(to: self.viewModel.displayName).disposed(by: disposeBag)
+        emailField.rx.text.map{ $0 ?? "" }.bind(to: self.viewModel.email).disposed(by: disposeBag)
+        statusField.rx.text.map{ $0 ?? "" }.bind(to: self.viewModel.status).disposed(by: disposeBag)
+        
+        setDefaultValues()
+        
+        viewModel.canSave.bind(to: saveButton.rx.isEnabled).disposed(by: disposeBag)
+        viewModel.canSave.map{ $0 ? 1 : 0.5 }.bind(to: saveButton.rx.alpha).disposed(by: disposeBag)
+        viewModel.canSave.map{ $0 ? #colorLiteral(red: 0.9098039269, green: 0.4784313738, blue: 0.6431372762, alpha: 1) : UIColor.gray}.bind(to: saveButton.rx.backgroundColor).disposed(by: disposeBag)
+        
+        viewModel.canSave.bind(to: editCancelButton.rx.isEnabled).disposed(by: disposeBag)
+        viewModel.canSave.map{ $0 ? 1 : 0.5 }.bind(to: editCancelButton.rx.alpha).disposed(by: disposeBag)
+        viewModel.canSave.map{ $0 ? #colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1) : UIColor.gray}.bind(to: editCancelButton.rx.backgroundColor).disposed(by: disposeBag)
+        
+        viewModel.status.map{$0.count}.map{"\($0)/25"}.bind(to: numberOfCharactorsLabel.rx.text).disposed(by: disposeBag)
+    }
+    
+    private func setDefaultValues(){
+        displayNameField.text = myUser.displayName
+        emailField.text = myUser.email
+        statusField.text = myUser.status
+        pictureURL = myUser.pictureURL ?? ""
     }
     
     
-    
-    private func fetchDataFromFirebase(){
+    private func setupViews(){
+        displayNameField.delegate = self
+        emailField.delegate = self
+        statusField.delegate = self
         
-        quoteListener = Firestore.firestore().collection("users").document(myUID).addSnapshotListener {[weak self] (snapshot, error) in
-            
-            guard let self = self else{return}
-            if error != nil {print(error!); return}
-            guard let snapshot = snapshot, let dictionary = snapshot.data() else{return}
-            let status = dictionary["status"] as? String ?? ""
-            let pictureURL = dictionary["pictureURL"] as? String ?? ""
-            let email = dictionary["email"] as? String ?? ""
-            let displayName = dictionary["displayName"] as? String ?? ""
-            
-            self.status = status
-            self.pictureURL = pictureURL
-            self.email = email
-            self.displayName = displayName
-        }
+        title = "Account Setting"
+        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.prefersLargeTitles = true
+        let barButtonItem = UIBarButtonItem(title: "Log Out", style: .done, target: self, action: #selector(logOutButtonPressed))
+        barButtonItem.tintColor = .white
+        navigationItem.rightBarButtonItem = barButtonItem
     }
     
     private func setupNotification() {
@@ -222,28 +178,16 @@ class SettingVC: UIViewController {
     }
     
     @objc func keyboardWillShow(notification: NSNotification) {
-        
         guard let userInfo = notification.userInfo else { return }
         
         if let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as AnyObject).cgRectValue {
             
-            var shouldMoveViewUp = false
-            
-            //if let activeTextField = activeTextField{
-            
             let bottomOfTextField = statusField.convert(statusField.bounds, to: self.view).maxY
-            print(bottomOfTextField)
             let topOfKeyboard = self.view.frame.height - keyboardSize.height
-            print(topOfKeyboard)
             
             if bottomOfTextField > topOfKeyboard {
-                shouldMoveViewUp = true
-            }
-            
-            if shouldMoveViewUp {
                 self.view.frame.origin.y = topOfKeyboard - bottomOfTextField - 70
             }
-            //}
         }
     }
     
@@ -258,8 +202,6 @@ class SettingVC: UIViewController {
     private func setupConstraints(){
         view.addSubview(bgImageView)
         view.addSubview(profileImageView)
-        view.addSubview(lockButton)
-        view.addSubview(changePictureButton)
         view.addSubview(displayNameLabel)
         view.addSubview(displayNameField)
         view.addSubview(emailLabel)
@@ -267,7 +209,7 @@ class SettingVC: UIViewController {
         view.addSubview(statusLabel)
         view.addSubview(numberOfCharactorsLabel)
         view.addSubview(statusField)
-        view.addSubview(cancelButton)
+        view.addSubview(editCancelButton)
         view.addSubview(saveButton)
         view.addSubview(line1)
         view.addSubview(line2)
@@ -277,17 +219,6 @@ class SettingVC: UIViewController {
         
         profileImageView.anchor(top: view.topAnchor, paddingTop: 180, width: 120, height: 120)
         profileImageView.centerX(inView: view)
-        
-        lockButton.topAnchor.constraint(equalTo: profileImageView.topAnchor, constant: -20).isActive = true
-        lockButton.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 20).isActive = true
-        lockButton.widthAnchor.constraint(equalToConstant: 60).isActive = true
-        lockButton.widthAnchor.constraint(equalTo: lockButton.heightAnchor).isActive = true
-        
-        changePictureButton.bottomAnchor.constraint(equalTo: profileImageView.bottomAnchor).isActive = true
-        changePictureButton.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor).isActive = true
-        changePictureButton.widthAnchor.constraint(equalToConstant: 90).isActive = true
-        changePictureButton.heightAnchor.constraint(equalToConstant: 25).isActive = true
-        
         
         displayNameLabel.anchor(top: profileImageView.bottomAnchor, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 30, paddingLeft: 30, paddingRight: 30)
         
@@ -312,42 +243,19 @@ class SettingVC: UIViewController {
         numberOfCharactorsLabel.firstBaselineAnchor.constraint(equalTo: statusLabel.firstBaselineAnchor).isActive = true
         numberOfCharactorsLabel.anchor(right: displayNameLabel.rightAnchor)
         
-        cancelButton.anchor(top: statusField.bottomAnchor, right: view.centerXAnchor, paddingTop: 30, paddingRight: 10,  height: 32)
-        cancelButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.20).isActive = true
+        editCancelButton.anchor(top: statusField.bottomAnchor, right: view.centerXAnchor, paddingTop: 30, paddingRight: 10,  height: 32)
+        editCancelButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.20).isActive = true
         
-        saveButton.anchor(top: cancelButton.topAnchor, left: view.centerXAnchor, paddingLeft: 10)
-        saveButton.widthAnchor.constraint(equalTo: cancelButton.widthAnchor).isActive = true
-        saveButton.heightAnchor.constraint(equalTo: cancelButton.heightAnchor).isActive = true
+        saveButton.anchor(top: editCancelButton.topAnchor, left: view.centerXAnchor, paddingLeft: 10)
+        saveButton.widthAnchor.constraint(equalTo: editCancelButton.widthAnchor).isActive = true
+        saveButton.heightAnchor.constraint(equalTo: editCancelButton.heightAnchor).isActive = true
     }
     
     
-    @objc private func lockButtonPressed(){
-        
-        lockButton.isEnabled = false
-        lockButton.tintColor = .lightGray
-        
-        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 34, weight: .light, scale: .default)
-        lockButton.setImage(UIImage(systemName: "lock.open", withConfiguration: symbolConfig), for: .normal)
-        
-        changePictureButton.isHidden = false
-        
-        displayNameField.isUserInteractionEnabled = true
-        emailField.isUserInteractionEnabled = true
-        statusField.isUserInteractionEnabled = true
-        
-        displayNameField.textColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
-        emailField.textColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
-        statusField.textColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
-        statusField.placeholder = ""
-        
-        cancelButton.isEnabled = true
-        cancelButton.backgroundColor = #colorLiteral(red: 0.9098039269, green: 0.4784313738, blue: 0.6431372762, alpha: 1)
-    }
     
-    @objc private func changePictureButtonPressed(){
+    @objc private func profilePictureTapped(){
         
         let action1 = UIAlertAction(title: "Take Photo", style: .default) { [weak self](action) in
-            
             guard let self = self else{return}
             let picker = UIImagePickerController()
             picker.delegate = self
@@ -355,8 +263,8 @@ class SettingVC: UIViewController {
             picker.sourceType = .camera
             self.present(picker, animated: true, completion: nil)
         }
+        
         let action2 = UIAlertAction(title: "Photo Library", style: .default) { [weak self](action) in
-            
             guard let self = self else{return}
             let picker = UIImagePickerController()
             picker.delegate = self
@@ -367,19 +275,14 @@ class SettingVC: UIViewController {
         let action3 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         
         ServiceAlert.showMultipleSelectionAlert(vc: self, title: "How would you like to pick your profile picture?", message: "", actions: [action1, action2, action3])
-        
     }
     
     
-    
-    
-    
     @objc private func saveButtonPressed(){
-        
+
         //バリデーション。そして、各情報をグローバルの変数に代入して更新する。
-        guard let displayName = displayNameField.text, let email = emailField.text,
-            let status = statusField.text else{return}
-        
+        guard let displayName = displayNameField.text, let email = emailField.text, let status = statusField.text else{return}
+
         if !email.isValidEmail{
             ServiceAlert.showSimpleAlert(vc: self, title: "Email is in invalid format.", message: "Please check out once again")
             return
@@ -388,32 +291,31 @@ class SettingVC: UIViewController {
             ServiceAlert.showSimpleAlert(vc: self, title: "Please enter Display Name.", message: "")
             return
         }
-        
+
         //Authにemail更新
         guard let currentUser = Auth.auth().currentUser else{return}
         currentUser.updateEmail(to: email) { (error) in
             if error != nil{print("Authへのemailのアップデート登録に失敗しました\(error!)"); return}
         }
-        
+
         //AuthにDisplayName更新
         let changeRequest = Auth.auth().currentUser?.createProfileChangeRequest()
         changeRequest?.displayName = displayName
         changeRequest?.commitChanges(completion: { (error) in
             if error != nil{print("AuthへのDisplay Nameのアップデート登録に失敗しました\(error!)"); return}
         })
-        
-        //判断は迷ったが、ここでローカルのemail, displayName, statusをグローバルの変数に代入する事にした。
-        self.email = email
-        self.displayName = displayName
-        self.status = status
+
+//        判断は迷ったが、ここでローカルのemail, displayName, statusをグローバルの変数に代入する事にした。
+        myUser.email = email
+        myUser.displayName = displayName
+        myUser.status = status
         
         //FireStorageにprofilePicture更新してURLゲット
         if newProfilePictureSelected{
-            
             guard let newProfilePicture = newProfilePicture else{return}
             guard let jpegData = newProfilePicture.jpegData(compressionQuality: 0.3) else{return}
             FireStorageManager.uploadProfileImage(jpegData: jpegData) {[weak self] (result) in
-                
+
                 guard let self = self else{return}
                 switch result{
                 case .success(let downloadURL):
@@ -429,15 +331,15 @@ class SettingVC: UIViewController {
     
     //FireStoreに保存
     func saveToFireStore(downloadURL: String?){
-        
+
         let dictionary = [
-            "displayName": displayName,
-            "email": email,
-            "pictureURL": pictureURL as Any,
-            "status": status] as [String : Any]
+            "displayName": myUser.displayName,
+            "email": myUser.email,
+            "pictureURL": downloadURL ?? "" as Any,
+            "status": myUser.status ?? ""] as [String : Any]
         
-        print(dictionary)
-        Firestore.firestore().collection("users").document(myUID).updateData(dictionary) { (error) in
+        
+        Firestore.firestore().collection("users").document(myUser.authUID).updateData(dictionary) { (error) in
             if error != nil{
                 print("新しいユーザー情報のFireStoreへの更新に失敗しました\(error!)")
             }
@@ -449,41 +351,14 @@ class SettingVC: UIViewController {
     
     
     @objc private func cancelButtonPressed(){
-        
         resetAllProperties()
     }
     
     private func resetAllProperties(){
-        
+        setDefaultValues()
         actualEditDone = false
-        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 34, weight: .light, scale: .default)
-        lockButton.setImage(UIImage(systemName: "lock", withConfiguration: symbolConfig), for: .normal)
-        lockButton.isEnabled = true
-        lockButton.tintColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
-        
-        
         newProfilePictureSelected = false
-        
-        displayNameField.isUserInteractionEnabled = false
-        displayNameField.text = displayName
-        displayNameField.textColor = .white
-        emailField.isUserInteractionEnabled = false
-        emailField.text = email
-        emailField.textColor = .white
-        statusField.isUserInteractionEnabled = false
-        statusField.text = status
-        statusField.textColor = .white
-        statusField.placeholder = "less than 25 charactors"
-        guard let url = URL(string: pictureURL) else{return}
-        profileImageView.sd_setImage(with: url, placeholderImage: nil, completed: nil)
-        
-        cancelButton.isEnabled = false
-        saveButton.isEnabled = false
-        cancelButton.backgroundColor = .lightGray
-        saveButton.backgroundColor = .lightGray
-        
-        changePictureButton.isHidden = true
-        
+//        let symbolConfig = UIImage.SymbolConfiguration(pointSize: 34, weight: .light, scale: .default)
     }
     
     @objc private func logOutButtonPressed(){
@@ -494,9 +369,7 @@ class SettingVC: UIViewController {
             }catch{
                 print("failed to log out from Firebase Auth sign in")
             }
-            
             FBSDKLoginKit.LoginManager().logOut()
-            
         }
         
         let action2 = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
@@ -508,14 +381,6 @@ class SettingVC: UIViewController {
 
 
 extension SettingVC:  UITextFieldDelegate{
-    
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        self.activeTextField = textField
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        self.activeTextField = nil
-    }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()

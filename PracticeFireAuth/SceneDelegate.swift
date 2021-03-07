@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Firebase
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -21,29 +22,65 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window?.windowScene = windowScene
+        window?.makeKeyAndVisible()
         
+        Auth.auth().addStateDidChangeListener { (auth, user) in
+            if let user = user{
+                User.createUserObjectFromUID(authUID: user.uid) { (result) in
+                    switch result{
+                    case .success(let user):
+                        let myUserObject = user
+                        let tab = MySubclassedTabBarController()
+                        let conversationListVC = ConversationListVC()
+                        let friendListVC = FriendListVC()
+                        let settingVC = SettingVC(viewModel: SettingViewModel(myUser: myUserObject), myUserObject: myUserObject)
+                        let nav1 = UINavigationController(rootViewController: conversationListVC)
+                        let nav2 = UINavigationController(rootViewController: friendListVC)
+                        let nav3 = UINavigationController(rootViewController: settingVC)
+                        nav1.tabBarItem = UITabBarItem(title: "Chat", image: UIImage(systemName: "text.bubble"), selectedImage: UIImage(systemName: "text.bubble.fill"))
+                        nav2.tabBarItem = UITabBarItem(title: "Friends", image: UIImage(systemName: "person"), selectedImage: UIImage(systemName: "person.fill"))
+                        nav3.tabBarItem = UITabBarItem(title: "Account", image: UIImage(systemName: "doc.plaintext"), selectedImage: UIImage(systemName: "doc.plaintext.fill"))
+                        
+                        tab.viewControllers = [nav1,nav2,nav3]
+                        UITabBar.appearance().tintColor = .gray
+                        UINavigationBar.appearance().tintColor = .gray
+                        let attributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 36, weight: .light)]
+                        UINavigationBar.appearance().largeTitleTextAttributes = attributes
+                        self.window?.rootViewController = tab
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    }
+                }
+            }else{
+                let myUserObject = user
+                let tab = MySubclassedTabBarController()
+                let conversationListVC = ConversationListVC()
+                let nav1 = UINavigationController(rootViewController: conversationListVC)
+                tab.viewControllers = [nav1]
+                self.window?.rootViewController = tab
+                
+            }
+        }
         //reveloper.comでは、UITabBarControllerを継承したMainTabBarControllerを作り、そのViewDidLoadの中にnavControllerやBarItemなどを書いている。
         //また、FirebaseAuthをインポートしif Auth.auth().currentUser == nil{}などのコードもそのviewDidLoadの中に書いている。
-        let tab = MySubclassedTabBarController()
-        let conversationListVC = ConversationListVC()
-        let friendListVC = FriendListVC()
-        let settingVC = SettingVC()
-        let nav1 = UINavigationController(rootViewController: conversationListVC)
-        let nav2 = UINavigationController(rootViewController: friendListVC)
-        let nav3 = UINavigationController(rootViewController: settingVC)
-        nav1.tabBarItem = UITabBarItem(title: "Chat", image: UIImage(systemName: "text.bubble"), selectedImage: UIImage(systemName: "text.bubble.fill"))
-        nav2.tabBarItem = UITabBarItem(title: "Friends", image: UIImage(systemName: "person"), selectedImage: UIImage(systemName: "person.fill"))
-        nav3.tabBarItem = UITabBarItem(title: "Account", image: UIImage(systemName: "doc.plaintext"), selectedImage: UIImage(systemName: "doc.plaintext.fill"))
+//        let tab = MySubclassedTabBarController()
+//        let conversationListVC = ConversationListVC()
+//        let friendListVC = FriendListVC()
+//        let settingVC = SettingVC(viewModel: SettingViewModel())
+//        let nav1 = UINavigationController(rootViewController: conversationListVC)
+//        let nav2 = UINavigationController(rootViewController: friendListVC)
+//        let nav3 = UINavigationController(rootViewController: settingVC)
+//        nav1.tabBarItem = UITabBarItem(title: "Chat", image: UIImage(systemName: "text.bubble"), selectedImage: UIImage(systemName: "text.bubble.fill"))
+//        nav2.tabBarItem = UITabBarItem(title: "Friends", image: UIImage(systemName: "person"), selectedImage: UIImage(systemName: "person.fill"))
+//        nav3.tabBarItem = UITabBarItem(title: "Account", image: UIImage(systemName: "doc.plaintext"), selectedImage: UIImage(systemName: "doc.plaintext.fill"))
+//
+//        tab.viewControllers = [nav1,nav2,nav3]
+//        UITabBar.appearance().tintColor = .gray
+//        UINavigationBar.appearance().tintColor = .gray
+//        let attributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 36, weight: .light)]
+//        UINavigationBar.appearance().largeTitleTextAttributes = attributes
+//        window?.rootViewController = tab
         
-        tab.viewControllers = [nav1,nav2,nav3]
-        UITabBar.appearance().tintColor = .gray
-        UINavigationBar.appearance().tintColor = .gray
-        let attributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 36, weight: .light)]
-        UINavigationBar.appearance().largeTitleTextAttributes = attributes
-        
-        
-        window?.rootViewController = tab
-        window?.makeKeyAndVisible()
     
     }
     
